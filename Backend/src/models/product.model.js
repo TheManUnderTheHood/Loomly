@@ -17,7 +17,7 @@ const productSchema = new Schema(
       required: true,
       min: 0,
     },
-    productImage: {
+     thumbnail: {
       public_id: {
         type: String,
         required: true,
@@ -27,6 +27,18 @@ const productSchema = new Schema(
         required: true,
       },
     },
+    images: [
+      {
+        public_id: {
+          type: String,
+          required: true,
+        },
+        url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     category: {
       type: Schema.Types.ObjectId,
       ref: "Category",

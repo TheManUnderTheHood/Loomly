@@ -8,7 +8,12 @@ import {
   changeCurrentPassword,  
   updateAccountDetails,   
   updateUserAvatar,       
-  getAllUsers
+  getAllUsers,
+  getUserAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -27,15 +32,20 @@ router.route("/register").post(
 );
 router.route("/login").post(loginUser);
 
-// --- Secured Routes ---
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);
-
-// +++ NEW USER MANAGEMENT ROUTES +++
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar);
+
+// +++ ADD: Address management routes +++
+router.route("/addresses").get(verifyJWT, getUserAddresses);
+router.route("/addresses").post(verifyJWT, addAddress);
+router.route("/addresses/:addressId").put(verifyJWT, updateAddress);
+router.route("/addresses/:addressId").delete(verifyJWT, deleteAddress);
+router.route("/addresses/:addressId/default").patch(verifyJWT, setDefaultAddress);
+
 
 // --- ADMIN ONLY ROUTES ---
 router.route("/all-users").get(verifyJWT, verifyAdmin, getAllUsers);

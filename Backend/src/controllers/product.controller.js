@@ -10,31 +10,38 @@ import { ApiFeatures } from "../utils/ApiFeatures.js";
 const createProduct = asyncHandler(async (req, res) => {
   const { name, description, price, stock, category, trending } = req.body;
 
-  // Basic validation
   if ([name, description, price, stock, category].some((field) => !field)) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
-  const imageLocalPath = req.file?.path;
-  if (!imageLocalPath) {
-    throw new ApiError(400, "Product image is required");
+  // req.files will be an array of files from multer
+  const imageFiles = req.files;
+  if (!imageFiles || imageFiles.length === 0) {
+    throw new ApiError(400, "At least one product image is required");
   }
 
-  const productImage = await uploadOnCloudinary(imageLocalPath);
-  if (!productImage) {
-    throw new ApiError(500, "Failed to upload product image");
+  // Upload all images to Cloudinary in parallel
+  const imageUploadPromises = imageFiles.map(file => uploadOnCloudinary(file.path));
+  const cloudinaryResponses = await Promise.all(imageUploadPromises);
+
+  // Check for any upload failures
+  if (cloudinaryResponses.some(response => !response)) {
+      throw new ApiError(500, "Failed to upload one or more product images");
   }
+
+  const images = cloudinaryResponses.map(response => ({
+    public_id: response.public_id,
+    url: response.url,
+  }));
 
   const product = await Product.create({
     name,
     description,
     price,
     stock,
-    category, // assuming category ID is passed from frontend
-    productImage: {
-      public_id: productImage.public_id,
-      url: productImage.url,
-    },
+    category,
+    thumbnail: images[0], // Use the first image as the thumbnail
+    images: images,       // Store all image objects in the images array
     trending: trending || false,
   });
 
@@ -61,7 +68,6 @@ const getProductById = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, product, "Product fetched successfully"));
 });
 
-// Controller to get products by category slug (e.g., /style/streetwear)
 const getProductsByCategory = asyncHandler(async (req, res) => {
   const { styleSlug } = req.params;
 
@@ -162,13 +168,35 @@ const deleteProduct = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, {}, "Product deleted successfully"));
 });
 
+const getRelatedProducts = asyncHandler(async (req, res) => {
+    const { productId } = req.params;
+
+    if (!mongoose.isValidObjectId(productId)) {
+        throw new ApiError(400, "Invalid product ID");
+    }
+
+    const currentProduct = await Product.findById(productId);
+    if (!currentProduct) {
+        throw new ApiError(404, "Product not found");
+    }
+
+    const relatedProducts = await Product.find({
+        category: currentProduct.category, // Find products in the same category
+        _id: { $ne: productId }           // Exclude the current product
+    }).limit(4); // Limit to 4 related products
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, relatedProducts, "Related products fetched successfully"));
+});
 
 // Make sure to export the new functions
 export {
-  createProduct,
+  createProduct, // (Modified)
   getProductById,
   getProductsByCategory,
   getAllProducts,
   updateProduct, 
-  deleteProduct, 
+  deleteProduct,
+  getRelatedProducts, // (New)
 };

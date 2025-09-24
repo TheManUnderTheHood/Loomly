@@ -297,15 +297,107 @@ const getAllUsers = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, users, "All users fetched successfully"));
 });
 
-// Make sure to export all the new functions
+const getUserAddresses = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    return res.status(200).json(new ApiResponse(200, user.addresses, "Addresses fetched successfully"));
+});
+
+const addAddress = asyncHandler(async (req, res) => {
+    const { addressLine1, city, state, country, postalCode } = req.body;
+
+    if (!addressLine1 || !city || !state || !country || !postalCode) {
+        throw new ApiError(400, "All address fields are required");
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+    
+    // If this is the first address, make it the default
+    const isDefault = user.addresses.length === 0;
+
+    user.addresses.push({ addressLine1, city, state, country, postalCode, isDefault });
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(201).json(new ApiResponse(201, user.addresses, "Address added successfully"));
+});
+
+const updateAddress = asyncHandler(async (req, res) => {
+    const { addressId } = req.params;
+    const { addressLine1, city, state, country, postalCode } = req.body;
+
+    const user = await User.findById(req.user._id);
+    const address = user.addresses.id(addressId);
+    if (!address) {
+        throw new ApiError(404, "Address not found");
+    }
+
+    address.addressLine1 = addressLine1 || address.addressLine1;
+    address.city = city || address.city;
+    address.state = state || address.state;
+    address.country = country || address.country;
+    address.postalCode = postalCode || address.postalCode;
+
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(new ApiResponse(200, user.addresses, "Address updated successfully"));
+});
+
+const deleteAddress = asyncHandler(async (req, res) => {
+    const { addressId } = req.params;
+    
+    const user = await User.findById(req.user._id);
+    const address = user.addresses.id(addressId);
+    if (!address) {
+        throw new ApiError(404, "Address not found");
+    }
+
+    // Mongoose sub-document removal
+    address.remove();
+    await user.save({ validateBeforeSave: false });
+    
+    return res.status(200).json(new ApiResponse(200, user.addresses, "Address deleted successfully"));
+});
+
+const setDefaultAddress = asyncHandler(async (req, res) => {
+    const { addressId } = req.params;
+
+    const user = await User.findById(req.user._id);
+    if (!user) throw new ApiError(404, "User not found");
+
+    // Set all other addresses to not be default
+    user.addresses.forEach(addr => {
+        addr.isDefault = false;
+    });
+
+    // Find the new default address and set it
+    const newDefault = user.addresses.id(addressId);
+    if (!newDefault) throw new ApiError(404, "Address not found");
+    newDefault.isDefault = true;
+
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(new ApiResponse(200, user.addresses, "Default address updated"));
+});
+
+
 export {
   registerUser,
   loginUser,
   logoutUser,
   refreshAccessToken,
   getCurrentUser,
-  changeCurrentPassword, // new
-  updateAccountDetails, // new
-  updateUserAvatar, // new
-  getAllUsers // new
+  changeCurrentPassword,
+  updateAccountDetails,
+  updateUserAvatar,
+  getAllUsers,
+  getUserAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress
 };
