@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Search, Heart, ShoppingCart, User } from 'lucide-react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import ProfileDropdown from './ProfileDropdown';
 import MegaMenu from './MegaMenu';
 import { navLinks } from '../data/navigation'; 
@@ -10,9 +10,19 @@ import { useWishlist } from '../context/WishlistContext';
 
 const Header = () => {
   const [activeMenu, setActiveMenu] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { cartItemCount } = useCart();
   const { wishlistItemCount } = useWishlist();
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?keyword=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery(""); // Clear input after search
+    }
+  };
 
   const iconClasses = "w-6 h-6 text-white hover:text-brand-accent transition-colors duration-300";
 
@@ -45,14 +55,16 @@ const Header = () => {
         </div>
         
         <div className="flex items-center gap-x-4 md:gap-x-6">
-            <div className="relative hidden lg:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+            <form onSubmit={handleSearchSubmit} className="relative hidden lg:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={20} />
               <input 
                 type="text" 
                 placeholder="Search for products & more" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-gray-800/50 w-64 text-white pl-10 pr-4 py-2.5 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent text-sm"
               />
-            </div>
+            </form>
 
             <div 
                 className="relative" 

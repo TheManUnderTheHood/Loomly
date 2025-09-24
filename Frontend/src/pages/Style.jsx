@@ -5,6 +5,7 @@ import api from '../api';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import SpotlightCard from '../components/SpotlightCard';
+import FilterSidebar from '../components/FilterSidebar';
 
 const Style = () => {
   const { styleName } = useParams();
@@ -12,6 +13,10 @@ const Style = () => {
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // State for filters and sorting
+  const [filters, setFilters] = useState({ price: {} });
+  const [sort, setSort] = useState('-createdAt');
 
   const styleTitle = category ? category.name.toUpperCase() : styleName.replace('-', ' ').toUpperCase();
 
@@ -20,7 +25,15 @@ const Style = () => {
       try {
         setLoading(true);
         setError('');
-        const response = await api.get(`/products/style/${styleName}`);
+
+        // Build the query string from state
+        const params = new URLSearchParams();
+        if (filters.price.gte) params.append('price[gte]', filters.price.gte);
+        if (filters.price.lte) params.append('price[lte]', filters.price.lte);
+        if (sort) params.append('sort', sort);
+        const queryString = params.toString();
+
+        const response = await api.get(`/products/style/${styleName}?${queryString}`);
         if (response.data.success) {
           setProducts(response.data.data.products);
           setCategory(response.data.data.category);
@@ -28,13 +41,13 @@ const Style = () => {
           setError('Category not found.');
         }
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch products for this category.');
+        setError(err.response?.data?.message || 'Failed to fetch products.');
       } finally {
         setLoading(false);
       }
     };
     fetchCategoryProducts();
-  }, [styleName]);
+  }, [styleName, filters, sort]); // Refetch when state changes
 
   return (
     <div className="min-h-screen bg-black text-white pt-40 pb-20 px-4 md:px-8">
@@ -46,39 +59,48 @@ const Style = () => {
           </p>
         </header>
         
-        {error ? (
-          <div className="text-center py-20">
-            <h2 className="text-2xl text-red-500">Error fetching products.</h2>
-            <p className="text-gray-600">{error}</p>
-          </div>
-        ) : loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))}
-          </div>
-        ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {products.map((product, index) => (
-              <motion.div
-                key={product._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <SpotlightCard>
-                  <ProductCard product={product} />
-                </SpotlightCard>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-           <div className="text-center py-20">
-             <h2 className="text-2xl text-gray-500">No products found for this category.</h2>
-             <p className="text-gray-600">Check back later!</p>
-           </div>
-        )}
-
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <aside className="lg:col-span-1">
+            <FilterSidebar 
+              filters={filters} 
+              setFilters={setFilters} 
+              sort={sort} 
+              setSort={setSort} 
+            />
+          </aside>
+          <main className="lg:col-span-3">
+            {error ? (
+              <div className="text-center py-20">
+                <h2 className="text-2xl text-red-500">Error fetching products.</h2>
+                <p className="text-gray-600">{error}</p>
+              </div>
+            ) : loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                {Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={index} />)}
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                {products.map((product, index) => (
+                  <motion.div
+                    key={product._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <SpotlightCard>
+                      <ProductCard product={product} />
+                    </SpotlightCard>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+               <div className="text-center py-20">
+                 <h2 className="text-2xl text-gray-500">No products match your criteria.</h2>
+                 <p className="text-gray-600">Try adjusting your filters.</p>
+               </div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );
