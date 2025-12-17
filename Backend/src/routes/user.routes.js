@@ -13,7 +13,9 @@ import {
   addAddress,
   updateAddress,
   deleteAddress,
-  setDefaultAddress
+  setDefaultAddress,
+  googleAuth,
+  facebookAuth,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -31,6 +33,10 @@ router.route("/register").post(
   registerUser             // 3. If no errors, proceed to controller
 );
 router.route("/login").post(loginUser);
+
+// Social login routes
+router.route("/auth/google").post(googleAuth);
+router.route("/auth/facebook").post(facebookAuth);
 
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").post(refreshAccessToken);

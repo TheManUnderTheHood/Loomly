@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOrder } from '../context/OrderContext';
 import { Link } from 'react-router-dom';
+import OrderHistorySkeleton from '../components/skeletons/OrderHistorySkeleton';
 
 const OrderHistoryPage = () => {
     const [orders, setOrders] = useState([]);
@@ -20,28 +21,32 @@ const OrderHistoryPage = () => {
     }, [getMyOrders]);
 
     if (loading) {
-        return <div className="min-h-screen bg-black text-white flex items-center justify-center">Fetching Your Order History...</div>;
+        return <OrderHistorySkeleton />;
     }
 
     if (orders.length === 0) {
         return (
-            <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center text-center pt-24 px-4">
-                <h1 className="text-5xl font-primary tracking-widest">NO ORDERS FOUND</h1>
-                <p className="text-gray-400 mt-4">You haven't placed any orders yet. Let's change that.</p>
-                <Link to="/" className="mt-8 bg-brand-accent text-white font-bold py-3 px-8 rounded-md hover:bg-opacity-80 transition-all">
-                    START SHOPPING
-                </Link>
+            <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white flex flex-col items-center justify-center text-center pt-24 px-4 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                <div className="relative z-10 animate-fade-in-up">
+                  <h1 className="text-6xl font-primary tracking-widest bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">NO ORDERS FOUND</h1>
+                  <p className="text-gray-400 mt-6 text-lg">You haven't placed any orders yet. Let's change that.</p>
+                  <Link to="/" className="inline-block mt-8 bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 px-8 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all transform hover:scale-105">
+                      START SHOPPING
+                  </Link>
+                </div>
             </div>
         );
     }
     
     return (
-        <div className="min-h-screen bg-black text-white pt-40 pb-20 px-4">
-            <div className="container mx-auto">
-                <h1 className="text-5xl font-primary tracking-widest text-center uppercase mb-12">Order History</h1>
+        <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white pt-40 pb-20 px-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+            <div className="container mx-auto relative z-10">
+                <h1 className="text-5xl font-primary tracking-widest text-center uppercase mb-12 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">Order History</h1>
                 <div className="space-y-6 max-w-4xl mx-auto">
                     {orders.map(order => (
-                        <div key={order._id} className="bg-gray-900/50 p-6 rounded-lg border border-gray-800">
+                        <Link key={order._id} to={`/orders/${order._id}`} className="block bg-gradient-to-r from-gray-900/80 to-black/80 backdrop-blur-sm p-6 rounded-xl border border-gray-700/50 hover:border-brand-accent/50 hover:shadow-lg hover:shadow-brand-accent/20 transition-all duration-300">
                             <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700">
                                 <div>
                                     <h2 className="font-bold text-lg">Order ID: <span className="text-gray-400 font-mono text-sm">{order._id}</span></h2>
@@ -65,7 +70,7 @@ const OrderHistoryPage = () => {
                              <div className="text-right font-bold text-xl border-t border-gray-700 pt-4">
                                 Total: ${order.totalPrice.toFixed(2)}
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>

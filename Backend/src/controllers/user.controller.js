@@ -384,6 +384,135 @@ const setDefaultAddress = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user.addresses, "Default address updated"));
 });
 
+// --- SOCIAL LOGIN CONTROLLERS ---
+const googleAuth = asyncHandler(async (req, res) => {
+  const { googleId, email, fullName, avatar } = req.body;
+
+  if (!googleId || !email) {
+    throw new ApiError(400, "Google ID and email are required");
+  }
+
+  // Check if user exists with this Google ID
+  let user = await User.findOne({ googleId });
+
+  if (!user) {
+    // Check if user exists with this email
+    user = await User.findOne({ email });
+    
+    if (user) {
+      // Link Google account to existing user
+      user.googleId = googleId;
+      user.authProvider = "google";
+      if (avatar) {
+        user.avatar = { url: avatar };
+      }
+      await user.save({ validateBeforeSave: false });
+    } else {
+      // Create new user with Google auth
+      const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
+      user = await User.create({
+        googleId,
+        email,
+        fullName: fullName || email.split('@')[0],
+        username,
+        avatar: avatar ? { url: avatar } : undefined,
+        authProvider: "google",
+      });
+    }
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User logged in with Google successfully"
+      )
+    );
+});
+
+const facebookAuth = asyncHandler(async (req, res) => {
+  const { facebookId, email, fullName, avatar } = req.body;
+
+  if (!facebookId) {
+    throw new ApiError(400, "Facebook ID is required");
+  }
+
+  // Check if user exists with this Facebook ID
+  let user = await User.findOne({ facebookId });
+
+  if (!user) {
+    // Check if user exists with this email (if email is provided)
+    if (email) {
+      user = await User.findOne({ email });
+    }
+    
+    if (user) {
+      // Link Facebook account to existing user
+      user.facebookId = facebookId;
+      user.authProvider = "facebook";
+      if (avatar) {
+        user.avatar = { url: avatar };
+      }
+      await user.save({ validateBeforeSave: false });
+    } else {
+      // Create new user with Facebook auth
+      const username = (email ? email.split('@')[0] : 'user') + '_' + Math.random().toString(36).substring(7);
+      user = await User.create({
+        facebookId,
+        email: email || `facebook_${facebookId}@placeholder.com`,
+        fullName: fullName || "Facebook User",
+        username,
+        avatar: avatar ? { url: avatar } : undefined,
+        authProvider: "facebook",
+      });
+    }
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User logged in with Facebook successfully"
+      )
+    );
+});
+
 
 export {
   registerUser,
@@ -399,5 +528,7 @@ export {
   addAddress,
   updateAddress,
   deleteAddress,
-  setDefaultAddress
+  setDefaultAddress,
+  googleAuth,
+  facebookAuth,
 };

@@ -60,9 +60,9 @@ const Home = () => {
     }, []);
 
     return (
-    <>
+    <div className="overflow-x-hidden">
       {/* 1. HERO SECTION with Video Background */}
-      <div className="relative h-screen flex items-center justify-center bg-black p-4 text-center overflow-hidden">
+      <div className="relative h-screen flex items-center justify-center bg-black p-4 text-center overflow-hidden overflow-x-hidden">
         <video 
             autoPlay 
             loop 
@@ -90,7 +90,7 @@ const Home = () => {
       </div>
 
       {/* 2. TRENDING PRODUCTS */}
-       <section className="py-20 px-4 bg-black">
+       <section className="py-20 px-4 bg-black overflow-x-hidden">
          <div className="container mx-auto">
             <SectionHeader>TRENDING NOW</SectionHeader>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -118,7 +118,7 @@ const Home = () => {
       
       {/* 3. BRAND MANIFESTO with Parallax */}
       <div 
-        className="min-h-[50vh] bg-cover bg-fixed bg-center flex items-center justify-center my-20 px-4" 
+        className="min-h-[50vh] bg-cover bg-fixed bg-center flex items-center justify-center my-20 px-4 overflow-x-hidden" 
         style={{ backgroundImage: 'url(back.png)'}}
        >
         <div className="text-center bg-black/70 backdrop-blur-md p-10 md:p-16 animate-fade-in-up">
@@ -128,7 +128,7 @@ const Home = () => {
       </div>
       
       {/* 4. CHOOSE YOUR POISON - Categories */}
-      <section className="py-20 px-4 bg-black">
+      <section className="py-20 px-4 bg-black overflow-x-hidden">
         <SectionHeader>CHOOSE YOUR POISON</SectionHeader>
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <StyleCard to="/style/old-money" image="https://www.finelegends.com/cdn/shop/files/a7f622396a062979dac4cf87606724ae.jpg?v=1749813714" title="Old Money" />
@@ -141,7 +141,7 @@ const Home = () => {
       <AnimatedMarquee />
 
       {/* 6. FEATURED COLLECTION */}
-       <section className="py-20 px-4 container mx-auto">
+       <section className="py-20 px-4 container mx-auto overflow-x-hidden">
            <div className="grid md:grid-cols-2 gap-10 items-center">
                {featuredProduct && (
                  <motion.div 
@@ -175,7 +175,7 @@ const Home = () => {
                 </motion.div>
            </div>
        </section>
-    </>
+    </div>
   );
 };
 

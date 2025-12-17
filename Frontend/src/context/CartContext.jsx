@@ -54,12 +54,24 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const updateCartQuantity = async (productId, quantity) => {
+    try {
+      await api.patch("/cart/item", { productId, quantity });
+      await fetchCart(); // Refetch to update state
+      return { success: true, message: "Cart updated." };
+    } catch (error) {
+      console.error("Failed to update cart quantity", error);
+      return { success: false, message: error.response?.data?.message || "An error occurred" };
+    }
+  };
+
   const value = {
     cart,
     cartItemCount: cart?.cart?.items?.length || 0,
     loading,
     addToCart,
     removeFromCart,
+    updateCartQuantity,
     fetchCart, // Expose for AuthContext
     clearCart, // Expose for AuthContext
   };

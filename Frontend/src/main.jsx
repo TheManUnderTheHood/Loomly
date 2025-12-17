@@ -6,7 +6,13 @@ import { AuthProvider } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { CartProvider } from './context/CartContext';
 import { Toaster } from 'react-hot-toast';
-import { OrderProvider } from './context/OrderContext'; 
+import { OrderProvider } from './context/OrderContext';
+import { initFacebookSDK } from './utils/socialSDK';
+
+// Initialize Facebook SDK
+if (import.meta.env.VITE_FACEBOOK_APP_ID) {
+  initFacebookSDK();
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

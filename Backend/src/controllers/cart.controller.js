@@ -8,16 +8,16 @@ import { Product } from "../models/product.model.js";
 const getUserCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ owner: req.user._id }).populate({
     path: "items.product",
-    select: "name price productImage stock",
+    // +++ FIX: Select 'thumbnail' instead of 'productImage' +++
+    select: "name price thumbnail stock", 
   });
 
   if (!cart) {
     return res
       .status(200)
-      .json(new ApiResponse(200, { items: [] }, "Cart is empty"));
+      .json(new ApiResponse(200, { cart: { items: [] }, cartTotalPrice: 0 }, "Cart is empty"));
   }
 
-  // Optional: Calculate total price on the backend
   let cartTotalPrice = 0;
   cart.items.forEach(item => {
     if (item.product) {

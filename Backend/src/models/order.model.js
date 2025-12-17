@@ -45,6 +45,21 @@ const orderSchema = new Schema(
     deliveredAt: {
       type: Date,
     },
+    trackingHistory: [
+      {
+        status: {
+          type: String,
+          required: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        note: {
+          type: String,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -12,13 +12,11 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); // To check initial auth status
+  const [loading, setLoading] = useState(true);
 
-  // Get the fetch/clear functions from the other contexts
   const { fetchCart, clearCart } = useCart();
   const { fetchWishlist, clearWishlist } = useWishlist();
 
-  // This effect runs on initial app load to check for an existing session
   useEffect(() => {
     const checkUserStatus = async () => {
       try {
@@ -26,14 +24,14 @@ export const AuthProvider = ({ children }) => {
         if (response.data.success) {
           setUser(response.data.data);
           setIsAuthenticated(true);
-          // User is logged in, fetch their data in parallel
           await Promise.all([fetchCart(), fetchWishlist()]);
         }
       } catch (error) {
-        // User is not logged in or token is invalid
+        // +++ MODIFICATION: This block is now expected to run for unauthenticated users +++
+        // We don't need to log an error here because the interceptor already informs us if a session truly expires.
+        // This catch block simply handles the normal case of a user not being logged in on app start.
         setUser(null);
         setIsAuthenticated(false);
-        // Ensure any stale data is cleared
         clearCart();
         clearWishlist();
       } finally {
@@ -41,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
     checkUserStatus();
-  }, []); // Note: Empty dependency array means this runs only once on mount
+  }, []);
 
   const login = async (credentials) => {
     const response = await api.post("/users/login", credentials);
@@ -73,6 +71,23 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   }
 
+  const updateUserInContext = (updatedUserData) => {
+    setUser(prevUser => ({...prevUser, ...updatedUserData}));
+  };
+
+  const socialLogin = async (provider, userData) => {
+    const endpoint = provider === 'google' ? '/users/auth/google' : '/users/auth/facebook';
+    const response = await api.post(endpoint, userData);
+    if (response.data.success) {
+      setUser(response.data.data.user);
+      setIsAuthenticated(true);
+      // After successful login, fetch all user-specific data
+      await Promise.all([fetchCart(), fetchWishlist()]);
+    }
+    return response.data;
+  };
+
+
   const value = {
     user,
     isAuthenticated,
@@ -80,6 +95,8 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateUserInContext,
+    socialLogin,
   };
 
   return (

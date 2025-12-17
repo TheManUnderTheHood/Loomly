@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SocialIcons from './components/SocialIcons';
@@ -8,18 +9,20 @@ import GlobalLoader from './components/GlobalLoader';
 import { Link } from 'react-router-dom';
 
 // Page Imports
-import Home from './pages/Home';
-import Style from './pages/Style';
-import Product from './pages/Product';
-import GenericPage from './pages/GenericPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import CartPage from './pages/CartPage';
-import WishlistPage from './pages/WishlistPage';
-import CheckoutPage from './pages/CheckoutPage';
-import OrderHistoryPage from './pages/OrderHistoryPage';
-import SearchPage from './pages/SearchPage'; // +++ NEW IMPORT
-import ProfilePage from './pages/ProfilePage'; // +++ NEW IMPORT
+const Home = lazy(() => import('./pages/Home'));
+const Style = lazy(() => import('./pages/Style'));
+const Product = lazy(() => import('./pages/Product'));
+const GenericPage = lazy(() => import('./pages/GenericPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const WishlistPage = lazy(() => import('./pages/WishlistPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'));
+const OrderDetailsPage = lazy(() => import('./pages/OrderDetailsPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+
 
 // We define the animation logic directly in the main App component
 const pageVariants = {
@@ -32,21 +35,23 @@ const pageTransition = { type: 'tween', ease: 'anticipate', duration: 0.5 };
 const AppContent = () => {
   const location = useLocation();
 
-  return (
+    return (
     <div className="relative bg-black">
       <GlobalLoader />
       <Header />
       <SocialIcons />
       <main>
         <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname + location.search} // Use location.search to re-animate on search query change
-            initial="initial"
-            animate="in"
-            exit="out"
-            variants={pageVariants}
-            transition={pageTransition}
-          >
+          {/* +++ NEW: Added Suspense wrapper for lazy loading +++ */}
+          <Suspense fallback={<GlobalLoader />}>
+            <motion.div
+              key={location.pathname + location.search}
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
             <Routes location={location}>
                 {/* --- Core Public Routes --- */}
                 <Route path="/" element={<Home />} />
@@ -73,11 +78,13 @@ const AppContent = () => {
                 <Route path="/returns" element={ <GenericPage title="Return & Exchange Policy"> <h2>Our Policy</h2> <p>We stand behind the statement each piece makes...</p> </GenericPage> }/>
                 <Route path="/shipping" element={ <GenericPage title="Shipping & Delivery"> <h2>Domestic & International</h2> <p>We ship globally...</p> </GenericPage> }/>
                 <Route path="/disclaimer" element={ <GenericPage title="Disclaimer"> <p>Loomly is a conceptual brand...</p> </GenericPage> }/>
+                <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
                 
                 {/* Fallback for any undefined route */}
                 <Route path="*" element={ <GenericPage title="404: Lost in the Void"> <p>The page you're looking for doesn't exist...</p> <Link to="/" className="text-brand-accent hover:underline">Return to the known universe.</Link> </GenericPage> }/>
             </Routes>
           </motion.div>
+          </Suspense>
         </AnimatePresence>
       </main>
       <Footer />
