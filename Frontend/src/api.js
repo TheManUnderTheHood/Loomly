@@ -1,7 +1,13 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
-const apiUrl = baseURL?.endsWith('/api/v1') ? baseURL : `${baseURL || ''}/api/v1`;
+const configuredBaseURL = import.meta.env.VITE_API_BASE_URL?.trim();
+const fallbackBaseURL = import.meta.env.DEV
+  ? "http://localhost:8000"
+  : "https://loomly-backend-aw3h.onrender.com";
+const resolvedBaseURL = (configuredBaseURL || fallbackBaseURL).replace(/\/+$/, "");
+const apiUrl = resolvedBaseURL.endsWith("/api/v1")
+  ? resolvedBaseURL
+  : `${resolvedBaseURL}/api/v1`;
 
 const api = axios.create({
   baseURL: apiUrl,
