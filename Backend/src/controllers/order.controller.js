@@ -7,14 +7,19 @@ import { Product } from "../models/product.model.js";
 import mongoose from "mongoose";
 
 const createOrder = asyncHandler(async (req, res) => {
-  const { shippingInfo } = req.body;
+  const { shippingInfo, paymentInfo } = req.body;
   const userId = req.user._id;
 
   if (!shippingInfo) {
     throw new ApiError(400, "Shipping information is required");
   }
 
-  const cart = await Cart.findOne({ owner: userId }).populate("items.product", "name price stock thumbnail");
+  // Expecting paymentInfo.status = "succeeded" from the Stripe elements
+  if (!paymentInfo || paymentInfo.status !== "succeeded") {
+      throw new ApiError(400, "Valid Payment Info is required");
+  }
+
+  const cart = await Cart.findOne({ owner: userId }).populate("items.product", "name price stock thumbnail variants");
   if (!cart || cart.items.length === 0) {
     throw new ApiError(400, "Your cart is empty");
   }
@@ -28,8 +33,19 @@ const createOrder = asyncHandler(async (req, res) => {
       throw new ApiError(404, `A product in your cart could not be found. Please remove it and try again.`);
     }
 
-    if (item.product.stock < item.quantity) {
-      throw new ApiError(400, `Not enough stock for ${item.product.name}. Available: ${item.product.stock}, Requested: ${item.quantity}`);
+    // Check specific variant stock if it has variants
+    let stockToCheck = item.product.stock;
+    if (item.product.variants && item.product.variants.length > 0) {
+        const variant = item.product.variants.find(v => v.size === item.size);
+        if (variant) {
+            stockToCheck = variant.stock;
+        } else {
+            throw new ApiError(400, `Selected variant (${item.size}) is not available for ${item.product.name}`);
+        }
+    }
+
+    if (stockToCheck < item.quantity) {
+      throw new ApiError(400, `Not enough stock for ${item.product.name} (Size: ${item.size}). Available: ${stockToCheck}, Requested: ${item.quantity}`);
     }
 
     totalPrice += item.product.price * item.quantity;
@@ -40,6 +56,7 @@ const createOrder = asyncHandler(async (req, res) => {
     orderItems.push({
       name: item.product.name,
       quantity: item.quantity,
+      size: item.size,
       price: item.product.price,
       image: imageUrl, // Use the safe imageUrl variable
       product: item.product._id,
@@ -51,7 +68,10 @@ const createOrder = asyncHandler(async (req, res) => {
     orderItems,
     totalPrice,
     owner: userId,
-    paymentInfo: { status: "succeeded" },
+    paymentInfo: {
+        id: paymentInfo.id || "manual_transaction",
+        status: paymentInfo.status
+    },
     trackingHistory: [
       {
         status: "Processing",
@@ -62,9 +82,16 @@ const createOrder = asyncHandler(async (req, res) => {
   });
 
   for (const item of cart.items) {
-    await Product.findByIdAndUpdate(item.product._id, {
-      $inc: { stock: -item.quantity },
-    });
+    if (item.product.variants && item.product.variants.length > 0) {
+        await Product.findOneAndUpdate(
+            { _id: item.product._id, "variants.size": item.size },
+            { $inc: { "variants.$.stock": -item.quantity, stock: -item.quantity } }
+        );
+    } else {
+        await Product.findByIdAndUpdate(item.product._id, {
+            $inc: { stock: -item.quantity },
+        });
+    }
   }
 
   await Cart.findByIdAndDelete(cart._id);

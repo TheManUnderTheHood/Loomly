@@ -8,10 +8,20 @@ import mongoose from "mongoose";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, description, price, stock, category, trending } = req.body;
+  const { name, description, price, stock, category, trending, variants } = req.body;
 
   if ([name, description, price, stock, category].some((field) => !field)) {
     throw new ApiError(400, "All required fields must be provided");
+  }
+
+  // Parse variants if they are sent as a stringified JSON array
+  let parsedVariants = [];
+  if (variants) {
+    try {
+      parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+    } catch (e) {
+      throw new ApiError(400, "Invalid variants format");
+    }
   }
 
   // req.files will be an array of files from multer
@@ -39,6 +49,7 @@ const createProduct = asyncHandler(async (req, res) => {
     description,
     price,
     stock,
+    variants: parsedVariants,
     category,
     thumbnail: images[0], // Use the first image as the thumbnail
     images: images,       // Store all image objects in the images array
@@ -118,24 +129,33 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
 const updateProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
-    const { name, description, price, stock, category, trending } = req.body;
+    const { name, description, price, stock, category, trending, variants } = req.body;
 
     if (!mongoose.isValidObjectId(productId)) {
         throw new ApiError(400, "Invalid Product ID");
+    }
+
+    // Parse variants if they are sent as a stringified JSON array
+    let parsedVariants;
+    if (variants) {
+      try {
+        parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+      } catch (e) {
+        throw new ApiError(400, "Invalid variants format");
+      }
+    }
+
+    // Build update object dynamically to only update provided fields
+    const updateData = { name, description, price, stock, category, trending };
+    if (parsedVariants) {
+        updateData.variants = parsedVariants;
     }
 
     // You can add more robust validation here, checking if fields are empty etc.
     const product = await Product.findByIdAndUpdate(
         productId,
         {
-            $set: {
-                name,
-                description,
-                price,
-                stock,
-                category,
-                trending
-            }
+            $set: updateData
         },
         { new: true }
     );

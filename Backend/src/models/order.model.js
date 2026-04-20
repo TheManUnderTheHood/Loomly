@@ -13,6 +13,7 @@ const orderSchema = new Schema(
       {
         name: { type: String, required: true },
         quantity: { type: Number, required: true },
+        size: { type: String, required: true },
         price: { type: Number, required: true }, // Price at the time of order
         image: { type: String, required: true }, // Image URL at the time of order
         product: {

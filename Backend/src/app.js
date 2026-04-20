@@ -41,6 +41,7 @@ import wishlistRouter from "./routes/wishlist.routes.js";
 import cartRouter from "./routes/cart.routes.js";
 import orderRouter from "./routes/order.routes.js";
 import reviewRouter from "./routes/review.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
 
 // --- ROUTES DECLARATION ---
 app.use("/api/v1/users", userRouter);
@@ -50,6 +51,7 @@ app.use("/api/v1/wishlist", wishlistRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/payment", paymentRouter);
 
 app.get("/", (req, res) => {
     res.send(`<h1>Loomly API is Working!!!</h1>`);

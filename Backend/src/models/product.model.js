@@ -44,6 +44,13 @@ const productSchema = new Schema(
       ref: "Category",
       required: true,
     },
+    variants: [
+      {
+        size: { type: String, required: true },
+        sku: { type: String, required: true, unique: true },
+        stock: { type: Number, required: true, min: 0, default: 0 }
+      }
+    ],
     stock: {
       type: Number,
       required: true,
