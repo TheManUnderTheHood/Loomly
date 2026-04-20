@@ -448,71 +448,6 @@ const googleAuth = asyncHandler(async (req, res) => {
     );
 });
 
-const facebookAuth = asyncHandler(async (req, res) => {
-  const { facebookId, email, fullName, avatar } = req.body;
-
-  if (!facebookId) {
-    throw new ApiError(400, "Facebook ID is required");
-  }
-
-  // Check if user exists with this Facebook ID
-  let user = await User.findOne({ facebookId });
-
-  if (!user) {
-    // Check if user exists with this email (if email is provided)
-    if (email) {
-      user = await User.findOne({ email });
-    }
-    
-    if (user) {
-      // Link Facebook account to existing user
-      user.facebookId = facebookId;
-      user.authProvider = "facebook";
-      if (avatar) {
-        user.avatar = { url: avatar };
-      }
-      await user.save({ validateBeforeSave: false });
-    } else {
-      // Create new user with Facebook auth
-      const username = (email ? email.split('@')[0] : 'user') + '_' + Math.random().toString(36).substring(7);
-      user = await User.create({
-        facebookId,
-        email: email || `facebook_${facebookId}@placeholder.com`,
-        fullName: fullName || "Facebook User",
-        username,
-        avatar: avatar ? { url: avatar } : undefined,
-        authProvider: "facebook",
-      });
-    }
-  }
-
-  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
-  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
-
-  const options = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "None",
-  };
-
-  return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          user: loggedInUser,
-          accessToken,
-          refreshToken,
-        },
-        "User logged in with Facebook successfully"
-      )
-    );
-});
-
 
 export {
   registerUser,
@@ -530,5 +465,4 @@ export {
   deleteAddress,
   setDefaultAddress,
   googleAuth,
-  facebookAuth,
 };

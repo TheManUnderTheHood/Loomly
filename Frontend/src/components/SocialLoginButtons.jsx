@@ -2,7 +2,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 const SocialLoginButtons = ({ onSuccess }) => {
-  const [loading, setLoading] = useState({ google: false, facebook: false });
+  const [loading, setLoading] = useState({ google: false });
 
   const handleGoogleLogin = async () => {
     setLoading(prev => ({ ...prev, google: true }));
@@ -49,51 +49,6 @@ const SocialLoginButtons = ({ onSuccess }) => {
     }
   };
 
-  const handleFacebookLogin = () => {
-    setLoading(prev => ({ ...prev, facebook: true }));
-    const toastId = toast.loading('Connecting to Facebook...');
-    
-    try {
-      if (!window.FB) {
-        throw new Error('Facebook SDK not loaded');
-      }
-
-      window.FB.login(
-        (response) => {
-          if (response.authResponse) {
-            // Get user profile
-            window.FB.api('/me', { fields: 'id,name,email,picture' }, async (userData) => {
-              try {
-                await onSuccess({
-                  provider: 'facebook',
-                  facebookId: userData.id,
-                  email: userData.email,
-                  fullName: userData.name,
-                  avatar: userData.picture?.data?.url,
-                });
-                
-                toast.success('Logged in with Facebook!', { id: toastId });
-              } catch (error) {
-                console.error('Facebook login error:', error);
-                toast.error(error.response?.data?.message || 'Failed to login with Facebook', { id: toastId });
-              } finally {
-                setLoading(prev => ({ ...prev, facebook: false }));
-              }
-            });
-          } else {
-            toast.error('Facebook login cancelled', { id: toastId });
-            setLoading(prev => ({ ...prev, facebook: false }));
-          }
-        },
-        { scope: 'public_profile,email' }
-      );
-    } catch (error) {
-      console.error('Facebook SDK error:', error);
-      toast.error('Facebook Sign-In not available. Please check your configuration.', { id: toastId });
-      setLoading(prev => ({ ...prev, facebook: false }));
-    }
-  };
-
   return (
     <div className="space-y-3">
       <div className="flex items-center my-6">
@@ -127,18 +82,6 @@ const SocialLoginButtons = ({ onSuccess }) => {
           />
         </svg>
         {loading.google ? 'Connecting...' : 'Google'}
-      </button>
-
-      <button
-        type="button"
-        onClick={handleFacebookLogin}
-        disabled={loading.facebook}
-        className="w-full flex items-center justify-center gap-3 bg-[#1877F2] text-white font-semibold py-3 rounded-md hover:bg-[#166FE5] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-        </svg>
-        {loading.facebook ? 'Connecting...' : 'Facebook'}
       </button>
     </div>
   );

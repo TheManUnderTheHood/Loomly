@@ -23,7 +23,7 @@ Loomly is a premium, full-stack e-commerce web application built using the **MER
 ## ✨ Key Features
 
 ### 🛍️ Customer Experience
-- **🔐 Authentication**: Secure JWT-based authentication with support for local login and social providers.
+- **🔐 Authentication**: Secure JWT-based authentication with support for local login and Google Sign-In.
 - **🔍 Product Discovery**: Advanced product search, debounced filtering, pagination, and dynamic category-based browsing.
 - **🛒 Cart & Wishlist**: Manage items, update quantities, select size variants, and curate a list of favorite products.
 - **💳 Secure Checkout**: Seamless and robust payment processing powered by **Stripe**.

@@ -42,7 +42,7 @@ const userSchema = new Schema(
       type: String,
       required: function() {
         // Password is only required if not using social login
-        return !this.googleId && !this.facebookId;
+        return !this.googleId;
       },
     },
     googleId: {
@@ -50,14 +50,9 @@ const userSchema = new Schema(
       unique: true,
       sparse: true,
     },
-    facebookId: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
     authProvider: {
       type: String,
-      enum: ["local", "google", "facebook"],
+      enum: ["local", "google"],
       default: "local",
     },
     role: {

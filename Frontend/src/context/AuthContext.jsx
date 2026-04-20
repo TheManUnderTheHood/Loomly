@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const socialLogin = async (provider, userData) => {
-    const endpoint = provider === 'google' ? '/users/auth/google' : '/users/auth/facebook';
+    const endpoint = '/users/auth/google';
     const response = await api.post(endpoint, userData);
     if (response.data.success) {
       setUser(response.data.data.user);
