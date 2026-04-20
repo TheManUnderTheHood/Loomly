@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Loader from "./Loader";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -7,7 +8,14 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     // Show a loading indicator while checking auth status
-    return <div className="min-h-screen bg-black flex items-center justify-center text-white">Authenticating...</div>;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        <div className="flex items-center gap-3">
+          <Loader size="sm" />
+          <span>Authenticating...</span>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

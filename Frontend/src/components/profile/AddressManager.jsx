@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api';
 import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import Loader from '../../components/Loader';
 
 // A sub-component for the Add/Edit form, often in a modal
 const AddressForm = ({ onSave, onCancel, address }) => {
@@ -122,7 +123,10 @@ const AddressManager = () => {
       </div>
       
       {loading ? (
-        <p className="text-gray-400">Loading addresses...</p>
+        <div className="flex items-center gap-2 text-gray-400">
+          <Loader size="xs" className="border-gray-500 border-t-gray-300" />
+          <p>Loading addresses...</p>
+        </div>
       ) : addresses.length > 0 ? (
         <div className="space-y-4">
           {addresses.map(addr => (

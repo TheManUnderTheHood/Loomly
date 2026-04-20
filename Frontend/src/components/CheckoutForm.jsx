@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import toast from 'react-hot-toast';
+import Loader from './Loader';
 
 const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }) => {
   const stripe = useStripe();
@@ -8,7 +9,7 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
-    e.preventDefault();
+    event.preventDefault();
 
     if (!stripe || !elements) {
       return;
@@ -59,9 +60,14 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
       <button 
         type="submit" 
         disabled={!stripe || loading}
-        className={`w-full py-4 text-white font-bold rounded-md bg-gradient-to-r from-brand-accent to-red-600 transition-all ${loading ? 'opacity-70 cursor-not-allowed text-transparent' : 'hover:shadow-lg hover:shadow-brand-accent/30'}`}
+        className={`w-full py-4 text-white font-bold rounded-md bg-gradient-to-r from-brand-accent to-red-600 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-brand-accent/30'}`}
       >
-        {loading ? <span className="loading-spinner">Processing...</span> : `Pay $${amount.toFixed(2)}`}
+        {loading ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <Loader size="xs" className="border-white/40 border-t-white" />
+            Processing...
+          </span>
+        ) : `Pay $${amount.toFixed(2)}`}
       </button>
     </form>
   );

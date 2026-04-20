@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import toast from 'react-hot-toast';
 import { Upload } from 'lucide-react';
+import Loader from '../../components/Loader';
 
 const AccountDetails = () => {
   const { user, updateUserInContext } = useAuth();
@@ -127,8 +128,13 @@ const AccountDetails = () => {
                     />
                 </div>
                 <div className="pt-2">
-                    <button type="submit" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-6 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50">
-                        {loading ? 'Saving...' : 'Save Changes'}
+                    <button type="submit" disabled={loading} className="inline-flex items-center gap-2 bg-brand-accent text-white font-bold py-2 px-6 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50">
+                        {loading ? (
+                          <>
+                            <Loader size="xs" className="border-white/40 border-t-white" />
+                            <span>Saving...</span>
+                          </>
+                        ) : 'Save Changes'}
                     </button>
                 </div>
             </form>

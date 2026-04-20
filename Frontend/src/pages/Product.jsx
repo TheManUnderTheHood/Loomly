@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import Skeleton from '../components/Skeleton';
 import ProductCard from '../components/ProductCard';
 import SpotlightCard from '../components/SpotlightCard';
+import Loader from '../components/Loader';
 
 // This sub-component now correctly displays the reviews
 const ProductReviews = ({ productId }) => {
@@ -110,15 +111,23 @@ const ProductReviews = ({ productId }) => {
               placeholder="Share your thoughts on this product..."
               className="w-full bg-gray-800 text-white p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent min-h-[100px]"
             />
-            <button type="submit" disabled={isSubmitting} className="mt-4 bg-brand-accent text-white font-bold py-2 px-6 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50">
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
+            <button type="submit" disabled={isSubmitting} className="mt-4 inline-flex items-center gap-2 bg-brand-accent text-white font-bold py-2 px-6 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50">
+              {isSubmitting ? (
+                <>
+                  <Loader size="xs" className="border-white/40 border-t-white" />
+                  <span>Submitting...</span>
+                </>
+              ) : 'Submit Review'}
             </button>
           </form>
         </div>
       )}
 
       {loading ? (
-        <p className="text-gray-400">Loading reviews...</p>
+        <div className="flex items-center gap-2 text-gray-400">
+          <Loader size="xs" className="border-gray-500 border-t-gray-300" />
+          <p>Loading reviews...</p>
+        </div>
       ) : reviews.length > 0 ? (
         <div className="space-y-6">
           {/* +++ FIX: Implemented the review mapping +++ */}

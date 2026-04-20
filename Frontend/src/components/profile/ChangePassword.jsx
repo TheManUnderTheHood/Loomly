@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import api from '../../api';
 import toast from 'react-hot-toast';
+import Loader from '../../components/Loader';
 
 const ChangePassword = () => {
   const [formData, setFormData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -65,8 +66,13 @@ const ChangePassword = () => {
           />
         </div>
         <div className="pt-2">
-          <button type="submit" disabled={loading} className="bg-brand-accent text-white font-bold py-2 px-6 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50">
-            {loading ? 'Saving...' : 'Update Password'}
+          <button type="submit" disabled={loading} className="inline-flex items-center gap-2 bg-brand-accent text-white font-bold py-2 px-6 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50">
+            {loading ? (
+              <>
+                <Loader size="xs" className="border-white/40 border-t-white" />
+                <span>Saving...</span>
+              </>
+            ) : 'Update Password'}
           </button>
         </div>
       </form>

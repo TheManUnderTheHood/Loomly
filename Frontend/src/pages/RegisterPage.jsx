@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, KeyRound, User, Image as ImageIcon } from 'lucide-react';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import Loader from '../components/Loader';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -82,8 +83,13 @@ const RegisterPage = () => {
           <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="email" name="email" placeholder="Email" onChange={handleChange} required className="w-full bg-gray-800 text-white pl-10 pr-4 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/></div>
           <div className="relative"><KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} /><input type="password" name="password" placeholder="Password" onChange={handleChange} required className="w-full bg-gray-800 text-white pl-10 pr-4 py-3 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/></div>
           <div><label htmlFor="avatar" className="text-sm text-gray-400">Avatar (Optional)</label><input type="file" name="avatar" id="avatar" onChange={handleFileChange} className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-accent/20 file:text-brand-accent hover:file:bg-brand-accent/30 mt-1"/></div>
-          <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-            {loading ? 'Creating...' : 'CREATE ACCOUNT'}
+          <button type="submit" disabled={loading} className="w-full flex items-center justify-center bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader size="xs" className="border-white/40 border-t-white" />
+                Creating...
+              </span>
+            ) : 'CREATE ACCOUNT'}
           </button>
         </form>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
 import toast from 'react-hot-toast';
+import Loader from '../../components/Loader';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('orders');
@@ -104,7 +105,10 @@ const AdminDashboard = () => {
 
                 <div className="bg-gray-900/50 p-8 rounded-lg border border-gray-800">
                     {loading ? (
-                        <div className="text-center text-gray-400 py-10">Loading data...</div>
+                        <div className="flex items-center justify-center gap-3 text-center text-gray-400 py-10">
+                            <Loader size="sm" className="border-gray-500 border-t-brand-accent" />
+                            <span>Loading data...</span>
+                        </div>
                     ) : (
                         <>
                             {/* Orders Tab */}

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, KeyRound } from 'lucide-react';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import Loader from '../components/Loader';
 
 const LoginPage = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -62,8 +63,13 @@ const LoginPage = () => {
             <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input type="password" name="password" placeholder="Password" value={credentials.password} onChange={handleChange} required className="w-full bg-gray-800/50 border border-gray-700/50 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-brand-accent/50 transition-all duration-300" />
           </div>
-          <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-            {loading ? 'Entering...' : 'ENTER THE VOID'}
+          <button type="submit" disabled={loading} className="w-full flex items-center justify-center bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+            {loading ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader size="xs" className="border-white/40 border-t-white" />
+                Entering...
+              </span>
+            ) : 'ENTER THE VOID'}
           </button>
         </form>
 
