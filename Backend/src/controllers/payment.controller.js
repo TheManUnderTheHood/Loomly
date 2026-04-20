@@ -16,7 +16,7 @@ const processPayment = asyncHandler(async (req, res) => {
         amount: amount,
         currency: "inr", // default to INR or anything you use
         metadata: {
-            company: "Flasher",
+            company: "Loomly",
         },
     });
 

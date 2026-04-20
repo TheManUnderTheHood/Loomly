@@ -22,7 +22,21 @@ const Header = () => {
   const { cartItemCount } = useCart();
   const { wishlistItemCount } = useWishlist();
 
+  const [dbCategories, setDbCategories] = useState([]);
+
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // +++ NEW
+
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const res = await api.get('/categories');
+        setDbCategories(res.data.data || []);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchCats();
+  }, []);
 
   // Effect for fetching instant search results
   useEffect(() => {
@@ -67,6 +81,21 @@ const Header = () => {
     }
   };
 
+  const extendedNavLinks = [
+    ...navLinks,
+    ...(dbCategories.length > 0 ? [{
+      id: 'collections',
+      title: 'Our Collections',
+      columns: [{
+        title: 'Categories',
+        links: dbCategories.map(cat => ({
+          name: cat.name,
+          href: `/style/${cat.slug}`
+        }))
+      }]
+    }] : [])
+  ];
+
   const iconClasses = "w-6 h-6 text-white hover:text-brand-accent transition-all duration-300 hover:scale-125 hover:rotate-12 hover:drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]";
 
   return (
@@ -82,7 +111,7 @@ const Header = () => {
                 Loomly
             </Link>
             <nav className="hidden md:flex items-center gap-x-8 uppercase text-sm tracking-wider h-[78px]">
-                {navLinks.map((navItem) => (
+                {extendedNavLinks.map((navItem) => (
                   <div 
                     key={navItem.id}
                     className="py-6 h-full flex items-center group"
@@ -175,7 +204,7 @@ const Header = () => {
         </div>
       </div>
       
-       <MegaMenu menuData={navLinks.find(nav => nav.id === activeMenu)} />
+       <MegaMenu menuData={extendedNavLinks.find(nav => nav.id === activeMenu)} />
     </header>
   );
 };

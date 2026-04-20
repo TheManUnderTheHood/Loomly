@@ -26,7 +26,7 @@ const dummyProducts = [
     categorySlug: "old-money", // We'll use this slug to find the right category ID later
     stock: 50,
     productImage: {
-      public_id: "flasher_demo/old_money_1",
+      public_id: "loomly_demo/old_money_1",
       url: "https://assets.myntassets.com/w_412,q_60,dpr_2,fl_progressive/assets/images/27629660/2024/2/27/1fa4f461-3c48-4db4-961c-8ccf47693a961709030852943LOREMWomenDialStrapsAnalogueWatchLR346TshirtsMANGOMANMenShir1.jpg",
     },
     trending: true,
@@ -38,7 +38,7 @@ const dummyProducts = [
     categorySlug: "streetwear",
     stock: 120,
     productImage: {
-      public_id: "flasher_demo/streetwear_1",
+      public_id: "loomly_demo/streetwear_1",
       url: "https://m.media-amazon.com/images/I/81GuZKNuWtL._UY350_.jpg",
     },
     trending: true,
@@ -50,7 +50,7 @@ const dummyProducts = [
     categorySlug: "ethnic",
     stock: 30,
     productImage: {
-      public_id: "flasher_demo/ethnic_1",
+      public_id: "loomly_demo/ethnic_1",
       url: "https://cdn.sareesaga.com/image/cache/data18/sea-green-embroidered-dupion-silk-kurta-178198-1000x1375.jpg",
     },
     trending: true,
@@ -62,7 +62,7 @@ const dummyProducts = [
     categorySlug: "formals",
     stock: 25,
     productImage: {
-      public_id: "flasher_demo/formals_1",
+      public_id: "loomly_demo/formals_1",
       url: "https://images.hawesandcurtis.com/tr:w-600,q-80/JK/JKSRUS43-G01V-172618-800px-1040px.jpg",
     },
     trending: false,
@@ -74,7 +74,7 @@ const dummyProducts = [
     categorySlug: "streetwear",
     stock: 80,
     productImage: {
-      public_id: "flasher_demo/streetwear_2",
+      public_id: "loomly_demo/streetwear_2",
       url: "https://imgs.search.brave.com/lGQINK98sykk3v95QhspeEnZpVoFn5wpEwxBRImDi_g/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/d2hpdGV2aWN0b3Jp/YS5jb20vV2hhdC1B/cmUtdGhlLUZhc2hp/b24tVHJlbmRzLWZv/ci1HZW4tWi0xMS5q/cGc",
     },
     trending: true,
@@ -86,7 +86,7 @@ const dummyProducts = [
     categorySlug: "men-tshirts",
     stock: 200,
     productImage: {
-      public_id: "flasher_demo/tshirt_1",
+      public_id: "loomly_demo/tshirt_1",
       url: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500",
     },
     trending: false,
@@ -98,7 +98,7 @@ const dummyProducts = [
     categorySlug: "women-tops",
     stock: 75,
     productImage: {
-      public_id: "flasher_demo/women_top_1",
+      public_id: "loomly_demo/women_top_1",
       url: "https://m.media-amazon.com/images/I/71OMQsNmJ2L._UY1100_.jpg",
     },
     trending: false,
@@ -110,7 +110,7 @@ const dummyProducts = [
     categorySlug: "old-money",
     stock: 40,
     productImage: {
-      public_id: "flasher_demo/old_money_2",
+      public_id: "loomly_demo/old_money_2",
       url: "https://media.karenmillen.com/i/karenmillen/bkk19770_camel_xl?$product_image_main_mobile$&fmt=webp",
     },
     trending: false,

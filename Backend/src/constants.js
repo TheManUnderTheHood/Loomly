@@ -1,1 +1,1 @@
-export const DB_NAME = "flasher";
+export const DB_NAME = "loomly";

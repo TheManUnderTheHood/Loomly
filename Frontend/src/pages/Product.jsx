@@ -12,7 +12,7 @@ import SpotlightCard from '../components/SpotlightCard';
 
 // This sub-component now correctly displays the reviews
 const ProductReviews = ({ productId }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasPurchased, setHasPurchased] = useState(false);
@@ -67,6 +67,17 @@ const ProductReviews = ({ productId }) => {
       setIsSubmitting(false);
     }
   };
+
+  const handleDeleteReview = async (reviewId) => {
+    const toastId = toast.loading("Deleting review...");
+    try {
+      await api.delete(`/reviews/${reviewId}`);
+      toast.success("Review deleted successfully!", { id: toastId });
+      fetchReviewsAndPurchaseStatus(); // Refresh
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete review", { id: toastId });
+    }
+  };
   
   return (
     <div className="mt-16">
@@ -112,16 +123,28 @@ const ProductReviews = ({ productId }) => {
         <div className="space-y-6">
           {/* +++ FIX: Implemented the review mapping +++ */}
           {reviews.map(review => (
-            <div key={review._id} className="border-b border-gray-800 pb-4">
-              <div className="flex items-center mb-2">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className={i < review.rating ? 'text-yellow-400' : 'text-gray-600'} fill="currentColor" />
-                  ))}
+            <div key={review._id} className="border-b border-gray-800 pb-4 relative">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center mb-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={16} className={i < review.rating ? 'text-yellow-400' : 'text-gray-600'} fill="currentColor" />
+                      ))}
+                    </div>
+                    <p className="ml-4 font-bold">{review.user?.fullName || 'Anonymous'}</p>
+                  </div>
+                  {review.comment && <p className="text-gray-300">{review.comment}</p>}
                 </div>
-                <p className="ml-4 font-bold">{review.user?.fullName || 'Anonymous'}</p>
+                {isAuthenticated && user?._id === review.user?._id && (
+                  <button 
+                    onClick={() => handleDeleteReview(review._id)} 
+                    className="text-red-500 text-sm hover:underline"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
-              {review.comment && <p className="text-gray-300">{review.comment}</p>}
             </div>
           ))}
         </div>

@@ -1,7 +1,7 @@
 {
-  "name": "flasher-backend",
+  "name": "loomly-backend",
   "version": "1.0.0",
-  "description": "Backend for the Flasher clothing e-commerce site",
+  "description": "Backend for the Loomly clothing e-commerce site",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
