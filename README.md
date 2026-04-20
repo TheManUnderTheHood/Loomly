@@ -88,7 +88,10 @@ Make sure you have the following installed and set up:
    PORT=8000
    MONGODB_URI=your_mongodb_connection_string
    CORS_ORIGIN=http://localhost:5173
-   JWT_SECRET=your_jwt_secret
+   ACCESS_TOKEN_SECRET=loomly-super-secret-access-token-key
+   ACCESS_TOKEN_EXPIRY=1d
+   REFRESH_TOKEN_SECRET=loomly-super-secret-refresh-token-key
+   REFRESH_TOKEN_EXPIRY=10d
    CLOUDINARY_CLOUD_NAME=your_cloudinary_name
    CLOUDINARY_API_KEY=your_cloudinary_api_key
    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
