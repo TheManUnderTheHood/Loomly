@@ -6,7 +6,7 @@ const ProductCard = ({ product }) => (
     <div className="relative overflow-hidden rounded-xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black shadow-xl hover:shadow-2xl hover:shadow-brand-accent/20 transition-all duration-500">
       <div className="absolute inset-0 bg-gradient-to-br from-brand-accent/0 to-brand-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none"></div>
       <img
-        src={product.productImage?.url || 'https://via.placeholder.com/400x600?text=No+Image'}
+        src={product.thumbnail?.url || product.productImage?.url || 'https://via.placeholder.com/400x600?text=No+Image'}
         alt={product.name}
         className="w-full h-96 object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
       />

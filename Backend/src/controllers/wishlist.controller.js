@@ -8,7 +8,7 @@ import { Product } from "../models/product.model.js";
 const getUserWishlist = asyncHandler(async (req, res) => {
   const wishlist = await Wishlist.findOne({ owner: req.user._id }).populate(
     "items.product",
-    "name price productImage"
+    "name price thumbnail"
   );
 
   if (!wishlist) {
@@ -62,7 +62,7 @@ const addOrRemoveFromWishlist = asyncHandler(async (req, res) => {
   // Fetch the updated wishlist with populated product details
   const updatedWishlist = await Wishlist.findById(wishlist._id).populate(
     "items.product",
-    "name price productImage"
+    "name price thumbnail"
   );
 
   return res

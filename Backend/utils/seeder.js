@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import connectDB from "../src/db/index.js"; // Adjust path if your connectDB is elsewhere
 import { Product } from "../src/models/product.model.js";
@@ -6,10 +5,9 @@ import { Category } from "../src/models/category.model.js";
 
 dotenv.config({ path: "./.env" });
 
-// --- Dummy Data ---
-// You can expand this with more products or use a library like Faker.js
+// --- Seed Data ---
 
-const dummyCategories = [
+const seedCategories = [
   { name: "Old Money", slug: "old-money" },
   { name: "Streetwear", slug: "streetwear" },
   { name: "Ethnic", slug: "ethnic" },
@@ -18,102 +16,217 @@ const dummyCategories = [
   { name: "Women Tops", slug: "women-tops" },
 ];
 
-const dummyProducts = [
+const buildVariants = (skuPrefix, sizeStocks) =>
+  sizeStocks.map(({ size, stock }) => ({
+    size,
+    sku: `${skuPrefix}-${size}`,
+    stock,
+  }));
+
+const toPublicIdBase = (productName) =>
+  productName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const seedProducts = [
   {
     name: "Classic Linen Shirt",
-    description: "A timeless button-down shirt crafted from premium, breathable linen. Perfect for a sophisticated yet relaxed look. Features a crisp collar and mother-of-pearl buttons.",
+    description:
+      "A breathable linen shirt with a tailored silhouette and clean collar construction. Built for summer layering with a premium feel.",
     price: 89.99,
-    categorySlug: "old-money", // We'll use this slug to find the right category ID later
-    stock: 50,
-    productImage: {
-      public_id: "loomly_demo/old_money_1",
-      url: "https://assets.myntassets.com/w_412,q_60,dpr_2,fl_progressive/assets/images/27629660/2024/2/27/1fa4f461-3c48-4db4-961c-8ccf47693a961709030852943LOREMWomenDialStrapsAnalogueWatchLR346TshirtsMANGOMANMenShir1.jpg",
-    },
+    categorySlug: "old-money",
+    imageUrls: [
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-CLS-LINEN", [
+      { size: "S", stock: 8 },
+      { size: "M", stock: 10 },
+      { size: "L", stock: 9 },
+      { size: "XL", stock: 7 },
+    ]),
     trending: true,
   },
   {
-    name: "Vintage Graphic Tee",
-    description: "Heavyweight cotton tee with a faded, vintage-inspired graphic print on the front. Features a relaxed fit and dropped shoulders for a perfect streetwear silhouette.",
+    name: "Vintage Washed Graphic Tee",
+    description:
+      "Heavyweight cotton tee with a faded print and relaxed drape. A street staple with soft hand-feel and durable stitching.",
     price: 45.0,
     categorySlug: "streetwear",
-    stock: 120,
-    productImage: {
-      public_id: "loomly_demo/streetwear_1",
-      url: "https://m.media-amazon.com/images/I/81GuZKNuWtL._UY350_.jpg",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-VTG-GRAPHIC", [
+      { size: "S", stock: 16 },
+      { size: "M", stock: 22 },
+      { size: "L", stock: 20 },
+      { size: "XL", stock: 14 },
+    ]),
     trending: true,
   },
   {
     name: "Embroidered Silk Kurta",
-    description: "An elegant silk-blend kurta featuring intricate embroidery along the neckline and cuffs. A perfect choice for festive occasions and cultural events.",
+    description:
+      "Festive silk-blend kurta with tonal embroidery and a clean placket. Designed for celebrations with breathable comfort.",
     price: 129.5,
     categorySlug: "ethnic",
-    stock: 30,
-    productImage: {
-      public_id: "loomly_demo/ethnic_1",
-      url: "https://cdn.sareesaga.com/image/cache/data18/sea-green-embroidered-dupion-silk-kurta-178198-1000x1375.jpg",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-EMB-KURTA", [
+      { size: "S", stock: 6 },
+      { size: "M", stock: 8 },
+      { size: "L", stock: 7 },
+      { size: "XL", stock: 5 },
+    ]),
     trending: true,
   },
   {
     name: "Slim-Fit Pinstripe Suit",
-    description: "A modern take on a classic pinstripe suit. Tailored for a sharp, slim fit, this suit is crafted from a high-quality wool blend for all-day comfort and style.",
+    description:
+      "A modern two-piece pinstripe suit with structured shoulders and lightweight wool blend fabric. Built for sharp formal wear.",
     price: 349.99,
     categorySlug: "formals",
-    stock: 25,
-    productImage: {
-      public_id: "loomly_demo/formals_1",
-      url: "https://images.hawesandcurtis.com/tr:w-600,q-80/JK/JKSRUS43-G01V-172618-800px-1040px.jpg",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1475180098004-ca77a66827be?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-SLM-PINSTRIPE", [
+      { size: "S", stock: 4 },
+      { size: "M", stock: 6 },
+      { size: "L", stock: 5 },
+      { size: "XL", stock: 4 },
+    ]),
     trending: false,
   },
   {
-    name: "Cyber-Glitch Hoodie",
-    description: "A bold, oversized hoodie with a high-definition glitch art graphic. Made from a soft fleece-lined fabric, it's the ultimate statement piece for any streetwear enthusiast.",
+    name: "Oversized Fleece Hoodie",
+    description:
+      "An oversized hoodie cut from heavyweight fleece with ribbed cuffs and a roomy hood. Perfect for layered streetwear fits.",
     price: 95.0,
     categorySlug: "streetwear",
-    stock: 80,
-    productImage: {
-      public_id: "loomly_demo/streetwear_2",
-      url: "https://imgs.search.brave.com/lGQINK98sykk3v95QhspeEnZpVoFn5wpEwxBRImDi_g/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/d2hpdGV2aWN0b3Jp/YS5jb20vV2hhdC1B/cmUtdGhlLUZhc2hp/b24tVHJlbmRzLWZv/ci1HZW4tWi0xMS5q/cGc",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-OVR-HOODIE", [
+      { size: "S", stock: 14 },
+      { size: "M", stock: 19 },
+      { size: "L", stock: 17 },
+      { size: "XL", stock: 12 },
+    ]),
     trending: true,
   },
   {
     name: "Minimalist Crewneck Tee",
-    description: "The perfect basic. This t-shirt is made from ultra-soft pima cotton and features a clean, classic crewneck design. Available in multiple essential colors.",
+    description:
+      "A clean everyday pima-cotton tee with a soft hand-feel and balanced fit. Built to be the most versatile layer in your wardrobe.",
     price: 29.99,
     categorySlug: "men-tshirts",
-    stock: 200,
-    productImage: {
-      public_id: "loomly_demo/tshirt_1",
-      url: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-MIN-CREW", [
+      { size: "S", stock: 22 },
+      { size: "M", stock: 28 },
+      { size: "L", stock: 24 },
+      { size: "XL", stock: 20 },
+    ]),
     trending: false,
   },
   {
     name: "Flowy Bell-Sleeve Top",
-    description: "A romantic and chic top with dramatic bell sleeves and a delicate floral pattern. Made from a lightweight, flowy fabric, it's perfect for a day out or a casual evening.",
+    description:
+      "A draped top with statement bell sleeves and airy fabric. Designed for movement and effortless day-to-evening styling.",
     price: 55.0,
     categorySlug: "women-tops",
-    stock: 75,
-    productImage: {
-      public_id: "loomly_demo/women_top_1",
-      url: "https://m.media-amazon.com/images/I/71OMQsNmJ2L._UY1100_.jpg",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-FLW-BELL", [
+      { size: "XS", stock: 9 },
+      { size: "S", stock: 12 },
+      { size: "M", stock: 13 },
+      { size: "L", stock: 9 },
+    ]),
     trending: false,
   },
   {
     name: "Tailored Wool Peacoat",
-    description: "A classic double-breasted peacoat made from a rich, warm wool blend. Features a timeless design with notched lapels and anchor-engraved buttons.",
+    description:
+      "A classic double-breasted peacoat with a tailored structure and warm wool blend. A cold-weather staple with timeless polish.",
     price: 220.0,
     categorySlug: "old-money",
-    stock: 40,
-    productImage: {
-      public_id: "loomly_demo/old_money_2",
-      url: "https://media.karenmillen.com/i/karenmillen/bkk19770_camel_xl?$product_image_main_mobile$&fmt=webp",
-    },
+    imageUrls: [
+      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-TLR-PEACOAT", [
+      { size: "S", stock: 6 },
+      { size: "M", stock: 8 },
+      { size: "L", stock: 7 },
+      { size: "XL", stock: 5 },
+    ]),
     trending: false,
+  },
+  {
+    name: "Relaxed Wide-Leg Trousers",
+    description:
+      "Clean pleated trousers with a relaxed wide-leg cut and fluid drape. Easy pairing for both formal and smart-casual looks.",
+    price: 78.0,
+    categorySlug: "formals",
+    imageUrls: [
+      "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-RLX-TROUSER", [
+      { size: "S", stock: 10 },
+      { size: "M", stock: 13 },
+      { size: "L", stock: 12 },
+      { size: "XL", stock: 9 },
+    ]),
+    trending: false,
+  },
+  {
+    name: "Cropped Ribbed Tank",
+    description:
+      "Soft ribbed knit tank with a cropped fit and stretchy comfort. Great for layering under shirts, blazers, and lightweight jackets.",
+    price: 34.5,
+    categorySlug: "women-tops",
+    imageUrls: [
+      "https://images.unsplash.com/photo-1495385794356-15371f348c31?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-CRP-TANK", [
+      { size: "XS", stock: 11 },
+      { size: "S", stock: 14 },
+      { size: "M", stock: 16 },
+      { size: "L", stock: 10 },
+    ]),
+    trending: true,
+  },
+  {
+    name: "Heritage Logo Street Tee",
+    description:
+      "Boxy-fit logo tee with reinforced neck rib and pre-shrunk cotton. Everyday streetwear essential with premium structure.",
+    price: 39.0,
+    categorySlug: "men-tshirts",
+    imageUrls: [
+      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1200&q=80",
+    ],
+    variants: buildVariants("LM-HRT-LOGOTEE", [
+      { size: "S", stock: 15 },
+      { size: "M", stock: 18 },
+      { size: "L", stock: 17 },
+      { size: "XL", stock: 14 },
+    ]),
+    trending: true,
   },
 ];
 
@@ -127,7 +240,7 @@ const importData = async () => {
     console.log("Old data destroyed!");
 
     // 2. Insert new categories
-    const createdCategories = await Category.insertMany(dummyCategories);
+    const createdCategories = await Category.insertMany(seedCategories);
     console.log("Categories imported!");
 
     // 3. Map category slugs to their new _id values
@@ -137,10 +250,33 @@ const importData = async () => {
     }, {});
 
     // 4. Prepare products with the correct category _id
-    const productsWithCategoryIds = dummyProducts.map((product) => {
+    const productsWithCategoryIds = seedProducts.map((product) => {
+      const categoryId = categoryMap[product.categorySlug];
+      const publicIdBase = toPublicIdBase(product.name);
+      const mappedImages = product.imageUrls.map((url, index) => ({
+        public_id: `loomly_seed/${publicIdBase}_${index + 1}`,
+        url,
+      }));
+
+      if (!categoryId) {
+        throw new Error(`Category not found for slug: ${product.categorySlug}`);
+      }
+
+      const calculatedStock = product.variants.reduce(
+        (total, variant) => total + variant.stock,
+        0
+      );
+
       return {
-        ...product,
-        category: categoryMap[product.categorySlug],
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category: categoryId,
+        thumbnail: mappedImages[0],
+        images: mappedImages,
+        variants: product.variants,
+        stock: calculatedStock,
+        trending: Boolean(product.trending),
       };
     });
 
