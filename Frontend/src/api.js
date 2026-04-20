@@ -12,11 +12,14 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response, // Directly return successful responses
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config || {};
+    const statusCode = error.response?.status;
+    const requestUrl = originalRequest.url || "";
+    const isRefreshRequest = requestUrl.includes("/users/refresh-token");
+    const isCurrentUserRequest = requestUrl.includes("/users/current-user");
 
     // Check if the error is 401, it's not a retry, AND the failed request was NOT for the refresh-token endpoint itself.
-    // +++ THIS IS THE CRITICAL FIX +++
-    if (error.response.status === 401 && originalRequest.url !== "/users/refresh-token" && !originalRequest._retry) {
+    if (statusCode === 401 && !isRefreshRequest && !originalRequest._retry) {
       originalRequest._retry = true; // Mark this request as retried
 
       try {
@@ -28,7 +31,9 @@ api.interceptors.response.use(
 
       } catch (refreshError) {
         // If the refresh attempt itself fails, the session is truly invalid.
-        console.error("Session expired. Please log in again.");
+        if (!isCurrentUserRequest) {
+          console.error("Session expired. Please log in again.");
+        }
         // Optional: you could programmatically log the user out here
         // logout(); 
         return Promise.reject(refreshError);
