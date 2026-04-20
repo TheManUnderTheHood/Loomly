@@ -1,6 +1,3 @@
-<div align="center">
-  <img src="https://via.placeholder.com/150x150.png?text=Loomly+Logo" alt="Loomly Logo" width="120" />
-  
   # 🧵 Loomly
 
   **A modern, high-performance, full-stack e-commerce experience.**
