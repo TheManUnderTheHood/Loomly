@@ -4,6 +4,7 @@ import api from '../api';
 import Skeleton from '../components/Skeleton';
 import OrderTrackingTimeline from '../components/OrderTrackingTimeline';
 import { ChevronRight } from 'lucide-react';
+import { formatINR } from '../utils/currency';
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
@@ -74,9 +75,9 @@ const OrderDetailsPage = () => {
                 <div>
                     <h2 className="text-xl font-bold mb-2">Order Summary</h2>
                     <div className="space-y-2">
-                        <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>${(order.totalPrice).toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>{formatINR(order.totalPrice)}</span></div>
                         <div className="flex justify-between"><span className="text-gray-400">Shipping</span><span>FREE</span></div>
-                        <div className="flex justify-between font-bold text-xl pt-2 border-t border-gray-700 mt-2"><span className="text-white">Total</span><span className="text-brand-accent">${order.totalPrice.toFixed(2)}</span></div>
+                    <div className="flex justify-between font-bold text-xl pt-2 border-t border-gray-700 mt-2"><span className="text-white">Total</span><span className="text-brand-accent">{formatINR(order.totalPrice)}</span></div>
                     </div>
                 </div>
             </div>
@@ -91,7 +92,7 @@ const OrderDetailsPage = () => {
                                 <p className="font-bold">{item.name}</p>
                                 <p className="text-sm text-gray-400">Qty: {item.quantity}</p>
                             </div>
-                            <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                            <p className="font-semibold">{formatINR(item.price * item.quantity)}</p>
                         </div>
                     ))}
                 </div>

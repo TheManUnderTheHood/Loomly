@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useOrder } from '../context/OrderContext';
 import { Link } from 'react-router-dom';
 import OrderHistorySkeleton from '../components/skeletons/OrderHistorySkeleton';
+import { formatINR } from '../utils/currency';
 
 const OrderHistoryPage = () => {
     const [orders, setOrders] = useState([]);
@@ -68,7 +69,7 @@ const OrderHistoryPage = () => {
                                 ))}
                             </div>
                              <div className="text-right font-bold text-xl border-t border-gray-700 pt-4">
-                                Total: ${order.totalPrice.toFixed(2)}
+                                Total: {formatINR(order.totalPrice)}
                             </div>
                         </Link>
                     ))}

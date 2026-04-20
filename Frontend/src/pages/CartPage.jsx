@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Minus, Plus } from "lucide-react";
 import CartSkeleton from '../components/skeletons/CartSkeleton';
+import { formatINR } from '../utils/currency';
 
 const CartPage = () => {
   const { cart, loading, removeFromCart, updateCartQuantity } = useCart();
@@ -73,7 +74,7 @@ const CartPage = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-lg">${(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-semibold text-lg">{formatINR(item.product.price * item.quantity)}</p>
                     <button onClick={() => handleRemove(item.product._id)} className="text-sm text-red-500 hover:underline mt-2">Remove</button>
                   </div>
                 </div>
@@ -86,7 +87,7 @@ const CartPage = () => {
             <div className="space-y-4 text-gray-300">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${cart.cartTotalPrice.toFixed(2)}</span>
+                <span>{formatINR(cart.cartTotalPrice)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
@@ -95,7 +96,7 @@ const CartPage = () => {
               <div className="border-t border-gray-700 my-4"></div>
               <div className="flex justify-between font-bold text-white text-xl">
                 <span>Total</span>
-                <span>${cart.cartTotalPrice.toFixed(2)}</span>
+                <span>{formatINR(cart.cartTotalPrice)}</span>
               </div>
             </div>
             <button onClick={() => navigate('/checkout')} className="w-full mt-6 bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105">

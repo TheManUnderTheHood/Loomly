@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
 import toast from 'react-hot-toast';
 import Loader from './Loader';
+import { formatINR } from '../utils/currency';
 
 const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }) => {
   const stripe = useStripe();
@@ -67,7 +68,7 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
             <Loader size="xs" className="border-white/40 border-t-white" />
             Processing...
           </span>
-        ) : `Pay $${amount.toFixed(2)}`}
+        ) : `Pay ${formatINR(amount)}`}
       </button>
     </form>
   );

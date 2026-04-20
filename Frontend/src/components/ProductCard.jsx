@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
+import { formatINR } from '../utils/currency';
 
 const ProductCard = ({ product }) => (
   <Link to={`/product/${product._id}`} className="block group">
@@ -12,7 +13,7 @@ const ProductCard = ({ product }) => (
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500"></div>
       <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-brand-accent border border-brand-accent/30">
-        ${product.price}
+        {formatINR(product.price)}
       </div>
       {product.ratings > 0 && (
         <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 rounded-full">

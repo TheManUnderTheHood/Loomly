@@ -7,6 +7,7 @@ import api from '../api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '../components/CheckoutForm';
+import { formatINR } from '../utils/currency';
 
 const CheckoutPage = () => {
   const { cart, cartItemCount, fetchCart } = useCart();
@@ -127,14 +128,14 @@ const CheckoutPage = () => {
                 {cart?.cart?.items.map(item => (
                   <div key={item.product._id} className="flex justify-between items-center text-sm">
                     <span className="text-gray-300 truncate">{item.product.name} <span className="text-gray-500">x{item.quantity}</span></span>
-                    <span className="font-semibold">${(item.product.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-semibold">{formatINR(item.product.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
               <div className="border-t border-gray-700 my-4"></div>
               <div className="flex justify-between font-bold text-white text-xl mb-6">
                 <span>Total</span>
-                <span>${calculateTotal().toFixed(2)}</span>
+                <span>{formatINR(calculateTotal())}</span>
               </div>
 
               {/* Stripe Payment Elements */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api';
 import toast from 'react-hot-toast';
 import Loader from '../../components/Loader';
+import { formatINR } from '../../utils/currency';
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('orders');
@@ -130,7 +131,7 @@ const AdminDashboard = () => {
                                                     <tr key={order._id} className="border-b border-gray-700/50 hover:bg-gray-800/30">
                                                         <td className="p-3 text-xs">{order._id}</td>
                                                         <td className="p-3">{order.owner?.fullName || 'N/A'}</td>
-                                                        <td className="p-3 font-semibold text-brand-accent">${order.totalPrice.toFixed(2)}</td>
+                                                        <td className="p-3 font-semibold text-brand-accent">{formatINR(order.totalPrice)}</td>
                                                         <td className="p-3">{order.orderStatus}</td>
                                                         <td className="p-3">
                                                             <select 

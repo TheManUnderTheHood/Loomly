@@ -10,6 +10,7 @@ import Skeleton from '../components/Skeleton';
 import ProductCard from '../components/ProductCard';
 import SpotlightCard from '../components/SpotlightCard';
 import Loader from '../components/Loader';
+import { formatINR } from '../utils/currency';
 
 // This sub-component now correctly displays the reviews
 const ProductReviews = ({ productId }) => {
@@ -342,7 +343,7 @@ const Product = () => {
   
             <div className="flex flex-col">
               <h1 className="text-4xl lg:text-5xl font-bold text-white">{product.name}</h1>
-              <p className="text-3xl text-brand-accent font-semibold my-4">${product.price}</p>
+              <p className="text-3xl text-brand-accent font-semibold my-4">{formatINR(product.price)}</p>
               <p className="text-gray-300 leading-relaxed mb-8">{product.description}</p>
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-400 mb-2">SIZE</label>
