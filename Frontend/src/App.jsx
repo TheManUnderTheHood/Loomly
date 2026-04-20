@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import SocialIcons from './components/SocialIcons';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import GlobalLoader from './components/GlobalLoader';
 import { Link } from 'react-router-dom';
 
@@ -15,6 +16,8 @@ const Product = lazy(() => import('./pages/Product'));
 const GenericPage = lazy(() => import('./pages/GenericPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const CartPage = lazy(() => import('./pages/CartPage'));
 const WishlistPage = lazy(() => import('./pages/WishlistPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
@@ -22,6 +25,9 @@ const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'));
 const OrderDetailsPage = lazy(() => import('./pages/OrderDetailsPage'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+
+// Admin Pages
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 
 
 // We define the animation logic directly in the main App component
@@ -62,6 +68,8 @@ const AppContent = () => {
                 {/* --- Auth Routes --- */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
                 
                 {/* --- Protected Routes --- */}
                 <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
@@ -69,6 +77,10 @@ const AppContent = () => {
                 <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
                 <Route path="/orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} /> {/* +++ NEW ROUTE */}
+                <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
+
+                {/* --- Admin Routes --- */}
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
                 {/* --- Generic & Policy Routes (no changes) --- */}
                 <Route path="/about" element={ <GenericPage title="About Us"> <p>Loomly was born from a rebellion against the mundane...</p> </GenericPage> }/>
@@ -78,7 +90,6 @@ const AppContent = () => {
                 <Route path="/returns" element={ <GenericPage title="Return & Exchange Policy"> <h2>Our Policy</h2> <p>We stand behind the statement each piece makes...</p> </GenericPage> }/>
                 <Route path="/shipping" element={ <GenericPage title="Shipping & Delivery"> <h2>Domestic & International</h2> <p>We ship globally...</p> </GenericPage> }/>
                 <Route path="/disclaimer" element={ <GenericPage title="Disclaimer"> <p>Loomly is a conceptual brand...</p> </GenericPage> }/>
-                <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailsPage /></ProtectedRoute>} />
                 
                 {/* Fallback for any undefined route */}
                 <Route path="*" element={ <GenericPage title="404: Lost in the Void"> <p>The page you're looking for doesn't exist...</p> <Link to="/" className="text-brand-accent hover:underline">Return to the known universe.</Link> </GenericPage> }/>

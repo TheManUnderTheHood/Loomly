@@ -28,9 +28,9 @@ export const CartProvider = ({ children }) => {
     setCart(null);
   };
 
-  const addToCart = async (productId, quantity = 1) => {
+  const addToCart = async (productId, quantity = 1, size = "Standard") => {
     try {
-      await api.post("/cart/", { productId, quantity });
+      await api.post("/cart/", { productId, quantity, size });
       // Refetch the cart to get the most up-to-date state
       await fetchCart();
       return { success: true, message: "Item added to cart!" };
@@ -43,9 +43,9 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const removeFromCart = async (productId) => {
+  const removeFromCart = async (productId, size = "Standard") => {
     try {
-      await api.delete(`/cart/item/${productId}`);
+      await api.delete(`/cart/item/${productId}?size=${size}`);
       await fetchCart();
       return { success: true, message: "Item removed from cart." };
     } catch (error) {
@@ -54,9 +54,9 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateCartQuantity = async (productId, quantity) => {
+  const updateCartQuantity = async (productId, quantity, size = "Standard") => {
     try {
-      await api.patch("/cart/item", { productId, quantity });
+      await api.patch("/cart/item", { productId, quantity, size });
       await fetchCart(); // Refetch to update state
       return { success: true, message: "Cart updated." };
     } catch (error) {

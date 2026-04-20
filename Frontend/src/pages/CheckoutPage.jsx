@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useOrder } from '../context/OrderContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import api from '../api';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import CheckoutForm from '../components/CheckoutForm';
 
 const CheckoutPage = () => {
   const { cart, cartItemCount, fetchCart } = useCart();
   const { createOrder } = useOrder();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [stripePromise, setStripePromise] = useState(null);
+  const [clientSecret, setClientSecret] = useState('');
   
   const [shippingInfo, setShippingInfo] = useState({
     address: '',
@@ -21,6 +27,36 @@ const CheckoutPage = () => {
   const handleChange = (e) => {
     setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   };
+
+  const calculateTotal = () => {
+      let total = 0;
+      cart?.cart?.items?.forEach(item => {
+          total += item.product.price * item.quantity;
+      });
+      return total;
+  };
+
+  useEffect(() => {
+    const fetchStripeConfigAndPaymentIntent = async () => {
+      try {
+        // Fetch Public Key
+        const { data: configData } = await api.get('/payment/stripekey');
+        setStripePromise(loadStripe(configData.data.stripeApiKey));
+
+        // Create Payment Intent with Cart Total
+        const amount = Math.round(calculateTotal() * 100); // Stripe expects cents
+        const { data: clientSecretData } = await api.post('/payment/process', { amount });
+        setClientSecret(clientSecretData.data.client_secret);
+      } catch (error) {
+        console.error("Failed to initialize Stripe", error);
+        toast.error("Payment system temporarily unavailable. Please try again later.");
+      }
+    };
+
+    if (cartItemCount > 0) {
+      fetchStripeConfigAndPaymentIntent();
+    }
+  }, [cart, cartItemCount]);
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -55,7 +91,7 @@ const CheckoutPage = () => {
           {/* Shipping Details Form */}
           <div className="lg:col-span-3 bg-gray-900/50 p-6 rounded-lg border border-gray-800">
             <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
-            <form onSubmit={handlePlaceOrder} className="space-y-4">
+            <form className="space-y-4">
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-400 mb-1">Address</label>
                 <input type="text" name="address" id="address" required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
@@ -85,7 +121,7 @@ const CheckoutPage = () => {
 
           {/* Order Summary */}
           <div className="lg:col-span-2 h-fit">
-            <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-800">
+            <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 mb-6">
               <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
               <div className="space-y-2">
                 {cart?.cart?.items.map(item => (
@@ -96,14 +132,25 @@ const CheckoutPage = () => {
                 ))}
               </div>
               <div className="border-t border-gray-700 my-4"></div>
-              <div className="flex justify-between font-bold text-white text-xl">
+              <div className="flex justify-between font-bold text-white text-xl mb-6">
                 <span>Total</span>
-                <span>${cart?.cartTotalPrice?.toFixed(2)}</span>
+                <span>${calculateTotal().toFixed(2)}</span>
               </div>
+
+              {/* Stripe Payment Elements */}
+              {clientSecret && stripePromise && (
+                  <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
+                      <CheckoutForm 
+                          amount={calculateTotal()}
+                          shippingInfo={shippingInfo}
+                          createOrder={createOrder}
+                          fetchCart={fetchCart}
+                          navigate={navigate}
+                      />
+                  </Elements>
+              )}
+
             </div>
-             <button onClick={handlePlaceOrder} disabled={loading} className="w-full mt-6 bg-brand-accent text-white font-bold py-4 rounded-md hover:bg-opacity-80 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading ? "Processing..." : "PLACE ORDER"}
-            </button>
           </div>
         </div>
       </div>

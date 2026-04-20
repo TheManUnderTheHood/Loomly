@@ -62,6 +62,9 @@ const LoginPage = () => {
             <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input type="password" name="password" placeholder="Password" value={credentials.password} onChange={handleChange} required className="w-full bg-gray-800/50 border border-gray-700/50 text-white pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-accent focus:border-brand-accent/50 transition-all duration-300" />
           </div>
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-brand-accent hover:underline">Forgot password?</Link>
+          </div>
           <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? 'Entering...' : 'ENTER THE VOID'}
           </button>
