@@ -16,6 +16,8 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [stripePromise, setStripePromise] = useState(null);
   const [clientSecret, setClientSecret] = useState('');
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
   
   const [shippingInfo, setShippingInfo] = useState({
     address: '',
@@ -28,6 +30,36 @@ const CheckoutPage = () => {
   const handleChange = (e) => {
     setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   };
+
+  const applyAddress = (address) => {
+    setShippingInfo({
+      address: address.addressLine1,
+      city: address.city,
+      state: address.state,
+      country: address.country,
+      pinCode: address.postalCode,
+    });
+  };
+
+  useEffect(() => {
+    const fetchSavedAddresses = async () => {
+      try {
+        const response = await api.get('/users/addresses');
+        const addresses = response.data.data || [];
+        setSavedAddresses(addresses);
+
+        const defaultAddress = addresses.find(address => address.isDefault) || addresses[0];
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress._id);
+          applyAddress(defaultAddress);
+        }
+      } catch (error) {
+        console.error('Failed to fetch saved addresses', error);
+      }
+    };
+
+    fetchSavedAddresses();
+  }, []);
 
   const calculateTotal = () => {
       let total = 0;
@@ -93,24 +125,45 @@ const CheckoutPage = () => {
           <div className="lg:col-span-3 bg-gray-900/50 p-6 rounded-lg border border-gray-800">
             <h2 className="text-2xl font-bold mb-6">Shipping Information</h2>
             <form className="space-y-4">
+              {savedAddresses.length > 0 && (
+                <div>
+                  <label htmlFor="savedAddress" className="block text-sm font-medium text-gray-400 mb-1">Saved Address</label>
+                  <select
+                    id="savedAddress"
+                    value={selectedAddressId}
+                    onChange={event => {
+                      const address = savedAddresses.find(item => item._id === event.target.value);
+                      setSelectedAddressId(event.target.value);
+                      if (address) applyAddress(address);
+                    }}
+                    className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                  >
+                    {savedAddresses.map(address => (
+                      <option key={address._id} value={address._id}>
+                        {address.addressLine1}, {address.city}{address.isDefault ? ' (Default)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-400 mb-1">Address</label>
-                <input type="text" name="address" id="address" required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
+                <input type="text" name="address" id="address" value={shippingInfo.address} required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="city" className="block text-sm font-medium text-gray-400 mb-1">City</label>
-                  <input type="text" name="city" id="city" required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
+                  <input type="text" name="city" id="city" value={shippingInfo.city} required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
                 </div>
                 <div>
                   <label htmlFor="state" className="block text-sm font-medium text-gray-400 mb-1">State / Province</label>
-                  <input type="text" name="state" id="state" required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
+                  <input type="text" name="state" id="state" value={shippingInfo.state} required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="pinCode" className="block text-sm font-medium text-gray-400 mb-1">ZIP / Postal Code</label>
-                  <input type="text" name="pinCode" id="pinCode" required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
+                  <input type="text" name="pinCode" id="pinCode" value={shippingInfo.pinCode} required onChange={handleChange} className="w-full bg-gray-800 text-white p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"/>
                 </div>
                 <div>
                   <label htmlFor="country" className="block text-sm font-medium text-gray-400 mb-1">Country</label>
