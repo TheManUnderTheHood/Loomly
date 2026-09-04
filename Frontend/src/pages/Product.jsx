@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import api from '../api';
-import { ChevronRight, Heart, Star } from 'lucide-react';
+import { ChevronRight, Heart, Star, Share2, Facebook, Instagram, Mail, RotateCcw, PackageCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
@@ -214,6 +215,10 @@ const Product = () => {
     const [error, setError] = useState('');
     const [mainImage, setMainImage] = useState('');
     const [isAdding, setIsAdding] = useState(false);
+    const [selectedSize, setSelectedSize] = useState('');
+    const [quantity, setQuantity] = useState(1);
+    const [pincode, setPincode] = useState('');
+    const [showSizeChart, setShowSizeChart] = useState(false);
     
     const { addToCart } = useCart();
     const { toggleWishlist, isItemInWishlist } = useWishlist();
@@ -254,8 +259,12 @@ const Product = () => {
         navigate("/login");
         return;
       }
+      if (product.variants?.length > 0 && !selectedSize) {
+        toast.error("Please select a size.");
+        return;
+      }
       const toastId = toast.loading("Adding to cart...");
-      const result = await addToCart(product._id, 1);
+      const result = await addToCart(product._id, quantity, selectedSize || "Standard");
       if (result.success) {
         toast.success(result.message, { id: toastId });
         setIsAdding(true);
@@ -264,6 +273,21 @@ const Product = () => {
         toast.error(result.message, { id: toastId });
       }
     };
+
+    const handlePincodeCheck = (event) => {
+      event.preventDefault();
+      if (/^\d{5,6}$/.test(pincode)) {
+        toast.success("Delivery available to this pincode.");
+      } else {
+        toast.error("Enter a valid pincode.");
+      }
+    };
+
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    const shareText = encodeURIComponent(`Check out ${product?.name || 'this product'} on Loomly`);
+    const sizes = product?.variants?.length
+      ? product.variants.map(variant => variant.size)
+      : ['S', 'M', 'L', 'XL'];
   
     const handleToggleWishlist = async () => {
       if (!isAuthenticated) {
@@ -343,25 +367,76 @@ const Product = () => {
   
             <div className="flex flex-col">
               <h1 className="text-4xl lg:text-5xl font-bold text-white">{product.name}</h1>
-              <p className="text-3xl text-brand-accent font-semibold my-4">{formatINR(product.price)}</p>
-              <p className="text-gray-300 leading-relaxed mb-8">{product.description}</p>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-400 mb-2">SIZE</label>
-                <div className="flex space-x-2">
-                  {['S', 'M', 'L', 'XL'].map(size => (
-                    <button key={size} className="w-12 h-12 border border-gray-700 rounded-md text-white hover:border-brand-accent focus:border-brand-accent focus:text-brand-accent transition-colors">
+              <p className="text-3xl text-brand-accent font-semibold mt-4">{formatINR(product.price)}</p>
+              <p className="text-sm text-gray-400 mb-6">Price inclusive of all applicable taxes</p>
+              <p className="text-gray-300 leading-relaxed mb-6">{product.description}</p>
+              <div className="border-y border-gray-800 py-5 mb-5">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-bold text-white">SELECT SIZE</label>
+                  <button type="button" onClick={() => setShowSizeChart(!showSizeChart)} className="text-sm text-brand-accent underline underline-offset-4 hover:text-white">
+                    SIZE CHART
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map(size => (
+                    <button key={size} type="button" onClick={() => setSelectedSize(size)} className={`w-12 h-11 border rounded-md text-white transition-colors ${selectedSize === size ? 'border-brand-accent bg-brand-accent/20 text-brand-accent' : 'border-gray-700 hover:border-brand-accent'}`}>
                       {size}
                     </button>
                   ))}
                 </div>
+                <AnimatePresence initial={false}>
+                  {showSizeChart && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, y: -8 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -8 }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-4 rounded-lg border border-gray-800 bg-black/40 p-3 text-sm text-gray-300">
+                        <div className="grid grid-cols-3 gap-3 font-semibold text-white"><span>Size</span><span>Chest</span><span>Length</span></div>
+                        {sizes.map((size, index) => <div key={size} className="grid grid-cols-3 gap-3 border-t border-gray-800 py-2"><span>{size}</span><span>{36 + index * 2}&quot;</span><span>{26 + index}&quot;</span></div>)}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              <div className="flex items-center space-x-4 mt-auto pt-8">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: 'easeOut', delay: 0.1 }}
+                className="flex items-center justify-between mb-5"
+              >
+                <label htmlFor="quantity" className="text-sm font-bold text-white">QUANTITY</label>
+                <select id="quantity" value={quantity} onChange={event => setQuantity(Number(event.target.value))} className="rounded-md border border-gray-700 bg-black px-3 py-2 text-white">
+                  {[1, 2, 3, 4, 5].map(value => <option key={value} value={value}>{String(value).padStart(2, '0')}</option>)}
+                </select>
+              </motion.div>
+              <div className="flex items-center space-x-3">
                 <button onClick={handleAddToCart} className={`w-full bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-4 rounded-xl hover:shadow-xl hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105 ${isAdding ? 'animate-pulse' : ''}`}>
                   {isAdding ? 'ADDED!' : 'ADD TO CART'}
                 </button>
-                <button onClick={handleToggleWishlist} className={`p-4 border rounded-xl transition-all duration-300 ${isItemInWishlist(product._id) ? 'border-brand-accent bg-brand-accent/20 text-brand-accent shadow-lg shadow-brand-accent/50' : 'border-gray-700 text-white hover:border-brand-accent hover:bg-brand-accent/10'}`} aria-label="Add to wishlist">
-                  <Heart fill={isItemInWishlist(product._id) ? 'currentColor' : 'none'} />
+                <button onClick={handleToggleWishlist} className={`flex items-center gap-2 whitespace-nowrap px-5 py-4 border rounded-xl transition-all duration-300 ${isItemInWishlist(product._id) ? 'border-brand-accent bg-brand-accent/20 text-brand-accent shadow-lg shadow-brand-accent/50' : 'border-gray-700 text-white hover:border-brand-accent hover:bg-brand-accent/10'}`} aria-label="Add to wishlist">
+                  <Heart size={20} fill={isItemInWishlist(product._id) ? 'currentColor' : 'none'} /> WISHLIST
                 </button>
+              </div>
+              <div className="flex items-center gap-4 border-b border-gray-800 py-5 text-sm text-gray-300">
+                <span className="flex items-center gap-2"><Share2 size={16} /> Share</span>
+                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`} target="_blank" rel="noreferrer" aria-label="Share on Facebook"><Facebook size={18} /></a>
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${shareText}`} target="_blank" rel="noreferrer" aria-label="Share on X"><Share2 size={18} /></a>
+                <a href={`mailto:?subject=${shareText}&body=${encodeURIComponent(shareUrl)}`} aria-label="Share by email"><Mail size={18} /></a>
+                <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="View Instagram"><Instagram size={18} /></a>
+              </div>
+              <div className="mt-5">
+                <h2 className="text-sm font-bold text-white mb-3">DELIVERY DETAILS</h2>
+                <form onSubmit={handlePincodeCheck} className="flex border border-gray-700 rounded-lg overflow-hidden">
+                  <input value={pincode} onChange={event => setPincode(event.target.value)} inputMode="numeric" placeholder="Enter pincode" aria-label="Pincode" className="min-w-0 flex-1 bg-black px-4 py-3 text-white outline-none placeholder:text-gray-500" />
+                  <button type="submit" className="px-4 font-bold text-brand-accent hover:bg-brand-accent/10">CHECK</button>
+                </form>
+              </div>
+              <div className="mt-5 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-2">
+                <div className="flex gap-3 rounded-lg border border-gray-800 p-3"><RotateCcw size={20} className="shrink-0 text-brand-accent" /><span>Easy returns within 30 days.</span></div>
+                <div className="flex gap-3 rounded-lg border border-gray-800 p-3"><PackageCheck size={20} className="shrink-0 text-brand-accent" /><span>Ships within 2 to 4 business days.</span></div>
               </div>
             </div>
           </div>
