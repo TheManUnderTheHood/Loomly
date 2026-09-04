@@ -14,7 +14,7 @@ const AdminDashboard = () => {
     // Forms
     const [newCategory, setNewCategory] = useState({ name: '', slug: '' });
     const [newProduct, setNewProduct] = useState({
-        name: '', description: '', price: '', stock: '', category: '', brand: '', productImages: []
+        name: '', description: '', features: '', price: '', stock: '', category: '', brand: '', productImages: []
     });
 
     useEffect(() => {
@@ -69,6 +69,7 @@ const AdminDashboard = () => {
             const formData = new FormData();
             formData.append('name', newProduct.name);
             formData.append('description', newProduct.description);
+            formData.append('features', JSON.stringify(newProduct.features.split('\n').map(feature => feature.trim()).filter(Boolean)));
             formData.append('price', newProduct.price);
             formData.append('stock', newProduct.stock);
             formData.append('category', newProduct.category);
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             toast.success("Product created!");
-            setNewProduct({ name: '', description: '', price: '', stock: '', category: '', brand: '', productImages: [] });
+            setNewProduct({ name: '', description: '', features: '', price: '', stock: '', category: '', brand: '', productImages: [] });
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to create product");
         }
@@ -226,6 +227,7 @@ const AdminDashboard = () => {
                                             </select>
                                         </div>
                                         <textarea placeholder="Description" required className="bg-black border border-gray-800 p-2 rounded w-full text-white h-24" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} />
+                                        <textarea placeholder="Product features (one per line)" className="bg-black border border-gray-800 p-2 rounded w-full text-white h-24" value={newProduct.features} onChange={e => setNewProduct({...newProduct, features: e.target.value})} />
                                         <input type="file" multiple accept="image/*" required className="bg-black border border-gray-800 p-2 rounded w-full text-white" onChange={e => setNewProduct({...newProduct, productImages: e.target.files})} />
                                         <button type="submit" className="bg-brand-accent text-white px-6 py-2 rounded font-bold w-full hover:bg-opacity-80">Upload Product</button>
                                     </form>

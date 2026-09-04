@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { name, description, price, stock, category, trending, variants } = req.body;
+  const { name, description, price, stock, category, trending, variants, features } = req.body;
 
   if ([name, description, price, stock, category].some((field) => !field)) {
     throw new ApiError(400, "All required fields must be provided");
@@ -21,6 +21,17 @@ const createProduct = asyncHandler(async (req, res) => {
       parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
     } catch (e) {
       throw new ApiError(400, "Invalid variants format");
+    }
+  }
+
+  let parsedFeatures = [];
+  if (features) {
+    try {
+      parsedFeatures = typeof features === 'string'
+        ? JSON.parse(features)
+        : features;
+    } catch (e) {
+      parsedFeatures = features.split('\n').map(feature => feature.trim()).filter(Boolean);
     }
   }
 
@@ -47,6 +58,7 @@ const createProduct = asyncHandler(async (req, res) => {
   const product = await Product.create({
     name,
     description,
+    features: parsedFeatures,
     price,
     stock,
     variants: parsedVariants,
@@ -129,7 +141,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
 const updateProduct = asyncHandler(async (req, res) => {
     const { productId } = req.params;
-    const { name, description, price, stock, category, trending, variants } = req.body;
+    const { name, description, price, stock, category, trending, variants, features } = req.body;
 
     if (!mongoose.isValidObjectId(productId)) {
         throw new ApiError(400, "Invalid Product ID");
@@ -145,10 +157,22 @@ const updateProduct = asyncHandler(async (req, res) => {
       }
     }
 
+    let parsedFeatures;
+    if (features) {
+      try {
+        parsedFeatures = typeof features === 'string' ? JSON.parse(features) : features;
+      } catch (e) {
+        parsedFeatures = features.split('\n').map(feature => feature.trim()).filter(Boolean);
+      }
+    }
+
     // Build update object dynamically to only update provided fields
     const updateData = { name, description, price, stock, category, trending };
     if (parsedVariants) {
         updateData.variants = parsedVariants;
+    }
+    if (parsedFeatures) {
+      updateData.features = parsedFeatures;
     }
 
     // You can add more robust validation here, checking if fields are empty etc.

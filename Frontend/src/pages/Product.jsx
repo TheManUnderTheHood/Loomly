@@ -370,6 +370,14 @@ const Product = () => {
               <p className="text-3xl text-brand-accent font-semibold mt-4">{formatINR(product.price)}</p>
               <p className="text-sm text-gray-400 mb-6">Price inclusive of all applicable taxes</p>
               <p className="text-gray-300 leading-relaxed mb-6">{product.description}</p>
+              {product.features?.length > 0 && (
+                <div className="mb-6 pb-5">
+                  <h2 className="text-sm font-bold text-white mb-3">PRODUCT FEATURES</h2>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2 text-sm text-gray-300">
+                    {product.features.map((feature, index) => <li key={`${feature}-${index}`} className="flex items-start gap-2"><span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-accent" />{feature}</li>)}
+                  </ul>
+                </div>
+              )}
               <div className="border-y border-gray-800 py-5 mb-5">
                 <div className="flex items-center justify-between mb-3">
                   <label className="block text-sm font-bold text-white">SELECT SIZE</label>
