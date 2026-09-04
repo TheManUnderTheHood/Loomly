@@ -100,7 +100,7 @@ const CheckoutPage = () => {
     setLoading(true);
     const toastId = toast.loading("Placing your order...");
 
-    const result = await createOrder(shippingInfo);
+    const result = await createOrder({ shippingInfo });
 
     if (result.success) {
       toast.success(result.message, { id: toastId });

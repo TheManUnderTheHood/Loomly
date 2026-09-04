@@ -4,6 +4,11 @@ import toast from 'react-hot-toast';
 const SocialLoginButtons = ({ onSuccess }) => {
   const [loading, setLoading] = useState({ google: false });
   const googleButtonRef = useRef(null);
+  const onSuccessRef = useRef(onSuccess);
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
 
   useEffect(() => {
     let cancelled = false;
@@ -23,7 +28,7 @@ const SocialLoginButtons = ({ onSuccess }) => {
             // Decode the JWT token to get user info
             const userData = JSON.parse(atob(response.credential.split('.')[1]));
 
-            await onSuccess({
+            await onSuccessRef.current({
               provider: 'google',
               googleId: userData.sub,
               email: userData.email,
@@ -71,7 +76,7 @@ const SocialLoginButtons = ({ onSuccess }) => {
         googleButtonRef.current.replaceChildren();
       }
     };
-  }, [onSuccess]);
+  }, []);
 
   return (
     <div className="space-y-3">

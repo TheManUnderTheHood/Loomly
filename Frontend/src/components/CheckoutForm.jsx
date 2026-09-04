@@ -36,7 +36,7 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
         // Payment succeeded, now create the order in OUR backend
         
         const backendResult = await createOrder({
-            ...shippingInfo,
+          shippingInfo,
             paymentInfo: {
                 id: result.paymentIntent.id,
                 status: result.paymentIntent.status
@@ -49,7 +49,7 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
             navigate('/orders');
         } else {
             // Edge case: Paid on stripe, but failed to save in our DB
-            toast.error("Payment succeeded, but failed to save order. Contact support.", { id: toastId });
+            toast.error(backendResult.message || "Payment succeeded, but failed to save order. Contact support.", { id: toastId });
         }
         setLoading(false);
     }
