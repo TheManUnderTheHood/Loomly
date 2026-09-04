@@ -97,12 +97,17 @@ Make sure you have the following installed and set up:
    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
    STRIPE_SECRET_KEY=your_stripe_secret
    STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+   STRIPE_WEBHOOK_SECRET=your_stripe_webhook_signing_secret
+   FRONTEND_URL=http://localhost:5173
    ```
 
 5. **Run the Backend Server**
    ```bash
    npm run dev
    ```
+
+6. **Configure Stripe Webhooks**
+   Register `https://your-backend-host/api/v1/payment/webhook` in the Stripe Dashboard and enable `checkout.session.completed` and `checkout.session.async_payment_succeeded`. Add the signing secret as `STRIPE_WEBHOOK_SECRET` in the backend environment.
 
 ---
 

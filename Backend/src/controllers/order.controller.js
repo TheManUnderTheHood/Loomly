@@ -11,62 +11,106 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
-const createOrder = asyncHandler(async (req, res) => {
-  const { shippingInfo, paymentInfo } = req.body;
-  const userId = req.user._id;
+const buildShippingInfo = (shippingInfo, metadata) => ({
+  address: shippingInfo?.address || metadata?.shippingAddress,
+  city: shippingInfo?.city || metadata?.shippingCity,
+  state: shippingInfo?.state || metadata?.shippingState,
+  country: shippingInfo?.country || metadata?.shippingCountry,
+  pinCode: shippingInfo?.pinCode || metadata?.shippingPinCode,
+});
 
-  if (!shippingInfo) {
+const finalizeOrderFromCheckoutSession = async (checkoutSession, shippingInfo) => {
+  if (!checkoutSession || checkoutSession.payment_status !== "paid") {
+    throw new ApiError(400, "Payment is not complete");
+  }
+
+  const userId = checkoutSession.metadata?.userId;
+  const cartId = checkoutSession.metadata?.cartId;
+  const resolvedShippingInfo = buildShippingInfo(shippingInfo, checkoutSession.metadata);
+  if (!mongoose.isValidObjectId(userId) || !mongoose.isValidObjectId(cartId)) {
+    throw new ApiError(400, "Payment metadata is invalid");
+  }
+  if (Object.values(resolvedShippingInfo).some((value) => !value)) {
     throw new ApiError(400, "Shipping information is required");
   }
 
+  const dbSession = await mongoose.startSession();
+  try {
+    let createdOrder;
+    await dbSession.withTransaction(async () => {
+      const existingOrder = await Order.findOne({ "paymentInfo.id": checkoutSession.id }).session(dbSession);
+      if (existingOrder) {
+        createdOrder = existingOrder;
+        return;
+      }
+
+      const cart = await Cart.findOne({ _id: cartId, owner: userId })
+        .populate("items.product", "name price thumbnail variants")
+        .session(dbSession);
+      if (!cart || cart.items.length === 0) {
+        throw new ApiError(400, "Your cart is empty");
+      }
+
+      let totalPrice = 0;
+      const orderItems = [];
+      for (const item of cart.items) {
+        if (!item.product) {
+          throw new ApiError(404, "A product in your cart could not be found");
+        }
+        totalPrice += item.product.price * item.quantity;
+        orderItems.push({
+          name: item.product.name,
+          quantity: item.quantity,
+          size: item.size,
+          price: item.product.price,
+          image: item.product.thumbnail?.url || "https://via.placeholder.com/150?text=No+Image",
+          product: item.product._id,
+        });
+      }
+
+      if (
+        checkoutSession.currency !== "inr" ||
+        checkoutSession.amount_total !== Math.round(totalPrice * 100) ||
+        checkoutSession.metadata?.cartId !== cart._id.toString()
+      ) {
+        throw new ApiError(400, "Payment does not match this order");
+      }
+
+      for (const item of cart.items) {
+        const hasVariants = item.product.variants?.length > 0;
+        const stockFilter = hasVariants
+          ? { _id: item.product._id, variants: { $elemMatch: { size: item.size, stock: { $gte: item.quantity } } } }
+          : { _id: item.product._id, stock: { $gte: item.quantity } };
+        const stockUpdate = hasVariants
+          ? { $inc: { "variants.$.stock": -item.quantity, stock: -item.quantity } }
+          : { $inc: { stock: -item.quantity } };
+        const result = await Product.updateOne(stockFilter, stockUpdate).session(dbSession);
+        if (result.modifiedCount !== 1) {
+          throw new ApiError(409, `Not enough stock for ${item.product.name}`);
+        }
+      }
+
+      [createdOrder] = await Order.create([{
+        shippingInfo: resolvedShippingInfo,
+        orderItems,
+        totalPrice,
+        owner: userId,
+        paymentInfo: { id: checkoutSession.id, status: checkoutSession.payment_status },
+        trackingHistory: [{ status: "Processing", timestamp: new Date(), note: "Order placed successfully" }],
+      }], { session: dbSession });
+      await Cart.deleteOne({ _id: cart._id }).session(dbSession);
+    });
+    return createdOrder;
+  } finally {
+    await dbSession.endSession();
+  }
+};
+
+const createOrder = asyncHandler(async (req, res) => {
+  const { shippingInfo, paymentInfo } = req.body;
   if (!paymentInfo?.id || !stripe) {
     throw new ApiError(400, "A valid payment is required");
   }
-
-  const cart = await Cart.findOne({ owner: userId }).populate("items.product", "name price stock thumbnail variants");
-  if (!cart || cart.items.length === 0) {
-    throw new ApiError(400, "Your cart is empty");
-  }
-
-  let totalPrice = 0;
-  const orderItems = [];
-
-  for (const item of cart.items) {
-    if (!item.product) {
-      // This can happen if a product was deleted but still exists in a user's cart
-      throw new ApiError(404, `A product in your cart could not be found. Please remove it and try again.`);
-    }
-
-    // Check specific variant stock if it has variants
-    let stockToCheck = item.product.stock;
-    if (item.product.variants && item.product.variants.length > 0) {
-        const variant = item.product.variants.find(v => v.size === item.size);
-        if (variant) {
-            stockToCheck = variant.stock;
-        } else {
-            throw new ApiError(400, `Selected variant (${item.size}) is not available for ${item.product.name}`);
-        }
-    }
-
-    if (stockToCheck < item.quantity) {
-      throw new ApiError(400, `Not enough stock for ${item.product.name} (Size: ${item.size}). Available: ${stockToCheck}, Requested: ${item.quantity}`);
-    }
-
-    totalPrice += item.product.price * item.quantity;
-
-    // +++ FIX: Provide a fallback placeholder image if thumbnail.url is missing +++
-    const imageUrl = item.product.thumbnail?.url || 'https://via.placeholder.com/150?text=No+Image';
-
-    orderItems.push({
-      name: item.product.name,
-      quantity: item.quantity,
-      size: item.size,
-      price: item.product.price,
-      image: imageUrl, // Use the safe imageUrl variable
-      product: item.product._id,
-    });
-  }
-
   let checkoutSession;
   try {
     checkoutSession = await stripe.checkout.sessions.retrieve(paymentInfo.id);
@@ -74,48 +118,10 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Payment could not be verified");
   }
 
-  if (
-    checkoutSession.payment_status !== "paid" ||
-    checkoutSession.amount_total !== Math.round(totalPrice * 100) ||
-    checkoutSession.currency !== "inr" ||
-    checkoutSession.metadata?.userId !== userId.toString() ||
-    checkoutSession.metadata?.cartId !== cart._id.toString()
-  ) {
-    throw new ApiError(400, "Payment does not match this order");
+  if (checkoutSession.metadata?.userId !== req.user._id.toString()) {
+    throw new ApiError(400, "Payment does not belong to this user");
   }
-
-  const order = await Order.create({
-    shippingInfo,
-    orderItems,
-    totalPrice,
-    owner: userId,
-    paymentInfo: {
-      id: checkoutSession.id,
-      status: checkoutSession.payment_status
-    },
-    trackingHistory: [
-      {
-        status: "Processing",
-        timestamp: new Date(),
-        note: "Order placed successfully",
-      },
-    ],
-  });
-
-  for (const item of cart.items) {
-    if (item.product.variants && item.product.variants.length > 0) {
-        await Product.findOneAndUpdate(
-            { _id: item.product._id, "variants.size": item.size },
-            { $inc: { "variants.$.stock": -item.quantity, stock: -item.quantity } }
-        );
-    } else {
-        await Product.findByIdAndUpdate(item.product._id, {
-            $inc: { stock: -item.quantity },
-        });
-    }
-  }
-
-  await Cart.findByIdAndDelete(cart._id);
+  const order = await finalizeOrderFromCheckoutSession(checkoutSession, shippingInfo);
 
   return res
     .status(201)
@@ -198,4 +204,4 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 });
 
 
-export { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus };
+export { createOrder, finalizeOrderFromCheckoutSession, getMyOrders, getOrderById, getAllOrders, updateOrderStatus };

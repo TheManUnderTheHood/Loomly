@@ -82,7 +82,7 @@ const CheckoutPage = () => {
         setStripePromise(loadStripe(stripeApiKey));
 
         // The backend calculates the total and creates the Checkout Session.
-        const { data: clientSecretData } = await api.post('/payment/process');
+        const { data: clientSecretData } = await api.post('/payment/process', { shippingInfo });
         setClientSecret(clientSecretData.data.client_secret);
       } catch (error) {
         console.error("Failed to initialize Stripe", error);
@@ -90,10 +90,11 @@ const CheckoutPage = () => {
       }
     };
 
-    if (cartItemCount > 0) {
+    const hasShippingInfo = Object.values(shippingInfo).every(Boolean);
+    if (cartItemCount > 0 && hasShippingInfo) {
       fetchStripeCheckoutSession();
     }
-  }, [cart, cartItemCount]);
+  }, [cart, cartItemCount, shippingInfo]);
 
   if (cartItemCount === 0) {
       navigate("/cart"); // Redirect if cart is empty
