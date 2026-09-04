@@ -21,7 +21,6 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
 
     try {
       const result = await checkoutResult.checkout.confirm({
-        returnUrl: `${window.location.origin}/orders`,
         redirect: 'if_required',
       });
 
