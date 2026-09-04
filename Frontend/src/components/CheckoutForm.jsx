@@ -57,7 +57,7 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement className="mb-4 theme-dark" options={{ theme: 'night' }} />
+      <PaymentElement className="mb-4 theme-dark" />
       <button 
         type="submit" 
         disabled={!stripe || loading}

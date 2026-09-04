@@ -3,13 +3,19 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
+    : null;
 
 const processPayment = asyncHandler(async (req, res) => {
     const { amount } = req.body;
 
     if (!amount) {
         throw new ApiError(400, "Amount is required");
+    }
+
+    if (!stripe) {
+        throw new ApiError(503, "Stripe payments are not configured");
     }
 
     const myPayment = await stripe.paymentIntents.create({
