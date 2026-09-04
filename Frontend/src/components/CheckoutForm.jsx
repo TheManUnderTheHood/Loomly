@@ -16,11 +16,6 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
       return;
     }
 
-    if (!checkoutResult.checkout.canConfirm) {
-      toast.error('Please complete your payment details.');
-      return;
-    }
-
     setLoading(true);
     const toastId = toast.loading("Processing payment...");
 
