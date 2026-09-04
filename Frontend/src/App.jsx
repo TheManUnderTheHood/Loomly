@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SocialIcons from './components/SocialIcons';
@@ -38,6 +38,10 @@ const pageTransition = { type: 'tween', ease: 'anticipate', duration: 0.5 };
 
 const AppContent = () => {
   const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname, location.search]);
 
     return (
     <div className="relative bg-black">
