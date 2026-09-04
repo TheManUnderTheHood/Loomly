@@ -22,7 +22,7 @@ export const navLinks = [
           { name: 'Nehru Jackets', href: '/style/ethnic-nehru-jackets' },
         ],
       },
-       {
+      {
         title: 'Bottomwear',
         links: [
           { name: 'Jeans', href: '/style/men-jeans' },
@@ -55,14 +55,6 @@ export const navLinks = [
           { name: 'T-Shirts', href: '/style/women-tshirts' },
           { name: 'Skirts', href: '/style/women-skirts' },
           { name: 'Jackets & Coats', href: '/style/women-jackets' },
-        ],
-      },
-      {
-        title: 'Footwear & Accessories',
-        links: [
-          { name: 'Flats & Heels', href: '/style/women-footwear' },
-          { name: 'Handbags', href: '/style/women-handbags' },
-          { name: 'Jewellery', href: '/style/women-jewellery' },
         ],
       },
     ],

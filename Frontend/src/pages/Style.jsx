@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api';
 import ProductCard from '../components/ProductCard';
 import ProductCardSkeleton from '../components/ProductCardSkeleton';
 import SpotlightCard from '../components/SpotlightCard';
 import FilterSidebar from '../components/FilterSidebar';
+import GenericPage from './GenericPage';
 
 const Style = () => {
   const { styleName } = useParams();
@@ -13,6 +14,7 @@ const Style = () => {
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notFound, setNotFound] = useState(false);
   
   // State for filters and sorting
   const [filters, setFilters] = useState({ price: {} });
@@ -25,6 +27,7 @@ const Style = () => {
       try {
         setLoading(true);
         setError('');
+        setNotFound(false);
 
         // Build the query string from state
         const params = new URLSearchParams();
@@ -41,13 +44,26 @@ const Style = () => {
           setError('Category not found.');
         }
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch products.');
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        } else {
+          setError(err.response?.data?.message || 'Failed to fetch products.');
+        }
       } finally {
         setLoading(false);
       }
     };
     fetchCategoryProducts();
   }, [styleName, filters, sort]); // Refetch when state changes
+
+  if (notFound) {
+    return (
+      <GenericPage title="404: Lost in the Void">
+        <p>This category does not exist.</p>
+        <Link to="/" className="text-brand-accent hover:underline">Return to the known universe.</Link>
+      </GenericPage>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white pt-40 pb-20 px-4 md:px-8">
@@ -95,8 +111,8 @@ const Style = () => {
               </div>
             ) : (
                <div className="text-center py-20">
-                 <h2 className="text-2xl text-gray-500">No products match your criteria.</h2>
-                 <p className="text-gray-600">Try adjusting your filters.</p>
+                 <h2 className="text-2xl text-gray-500">Currently not available.</h2>
+                 <p className="text-gray-600">Please check back soon for products in this category.</p>
                </div>
             )}
           </main>

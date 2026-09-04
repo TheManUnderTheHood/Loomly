@@ -5,12 +5,14 @@ import Skeleton from '../components/Skeleton';
 import OrderTrackingTimeline from '../components/OrderTrackingTimeline';
 import { ChevronRight } from 'lucide-react';
 import { formatINR } from '../utils/currency';
+import GenericPage from './GenericPage';
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -21,7 +23,11 @@ const OrderDetailsPage = () => {
           setOrder(response.data.data);
         }
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch order details.");
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        } else {
+          setError(err.response?.data?.message || "Failed to fetch order details.");
+        }
       } finally {
         setLoading(false);
       }
@@ -38,6 +44,15 @@ const OrderDetailsPage = () => {
           <Skeleton className="h-32 w-full" />
         </div>
       </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <GenericPage title="404: Lost in the Void">
+        <p>This order could not be found.</p>
+        <Link to="/orders" className="text-brand-accent hover:underline">Return to order history.</Link>
+      </GenericPage>
     );
   }
   
