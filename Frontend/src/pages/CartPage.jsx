@@ -11,9 +11,9 @@ const CartPage = () => {
   const { cart, loading, removeFromCart, updateCartQuantity } = useCart();
   const navigate = useNavigate();
 
-  const handleRemove = async (productId) => {
+  const handleRemove = async (productId, size) => {
     const toastId = toast.loading("Removing item...");
-    const result = await removeFromCart(productId);
+    const result = await removeFromCart(productId, size);
     if (result.success) {
       toast.success(result.message, { id: toastId });
     } else {
@@ -21,12 +21,12 @@ const CartPage = () => {
     }
   };
 
-  const handleQuantityChange = (productId, newQuantity) => {
+  const handleQuantityChange = (productId, newQuantity, size) => {
     if (newQuantity < 1) {
-      handleRemove(productId);
+      handleRemove(productId, size);
       return;
     }
-    updateCartQuantity(productId, newQuantity);
+    updateCartQuantity(productId, newQuantity, size);
   };
 
   if (loading && !cart) {
@@ -63,7 +63,7 @@ const CartPage = () => {
             {cart.cart.items.map(item => (
               // Add a check to ensure item and product exist before rendering
               item && item.product && (
-                <div key={item.product._id} className="flex items-center bg-gradient-to-r from-gray-900/80 to-black/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 hover:border-brand-accent/30 transition-all duration-300 shadow-lg">
+                <div key={`${item.product._id}-${item.size}`} className="flex items-center bg-gradient-to-r from-gray-900/80 to-black/80 backdrop-blur-sm p-4 rounded-xl border border-gray-700/50 hover:border-brand-accent/30 transition-all duration-300 shadow-lg">
                   <Link to={`/product/${item.product._id}`} className="group">
                       <img src={item.product.thumbnail?.url} alt={item.product.name} className="w-24 h-32 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300" />
                   </Link>
@@ -73,14 +73,14 @@ const CartPage = () => {
                     </Link>
                     <div className="flex items-center gap-2 mt-2">
                         <p className="text-gray-400 mr-2">Qty:</p>
-                        <button onClick={() => handleQuantityChange(item.product._id, item.quantity - 1)} className="p-1 rounded-full border border-gray-700 hover:bg-gray-700"><Minus size={16}/></button>
+                        <button onClick={() => handleQuantityChange(item.product._id, item.quantity - 1, item.size)} className="p-1 rounded-full border border-gray-700 hover:bg-gray-700"><Minus size={16}/></button>
                         <span className="font-bold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => handleQuantityChange(item.product._id, item.quantity + 1)} className="p-1 rounded-full border border-gray-700 hover:bg-gray-700"><Plus size={16}/></button>
+                        <button onClick={() => handleQuantityChange(item.product._id, item.quantity + 1, item.size)} className="p-1 rounded-full border border-gray-700 hover:bg-gray-700"><Plus size={16}/></button>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-lg">{formatINR(item.product.price * item.quantity)}</p>
-                    <button onClick={() => handleRemove(item.product._id)} className="text-sm text-red-500 hover:underline mt-2">Remove</button>
+                    <button onClick={() => handleRemove(item.product._id, item.size)} className="text-sm text-red-500 hover:underline mt-2">Remove</button>
                   </div>
                 </div>
               )
