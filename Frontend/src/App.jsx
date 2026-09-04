@@ -7,6 +7,7 @@ import SocialIcons from './components/SocialIcons';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import GlobalLoader from './components/GlobalLoader';
+import Loader from './components/Loader';
 import { Link } from 'react-router-dom';
 
 // Page Imports
@@ -36,6 +37,13 @@ const pageVariants = {
 };
 const pageTransition = { type: 'tween', ease: 'anticipate', duration: 0.5 };
 
+const AppLoadingScreen = () => (
+  <div className="fixed inset-0 z-[998] flex flex-col items-center justify-center bg-black">
+    <Loader size="lg" />
+    <p className="mt-4 text-lg tracking-widest text-gray-400 font-primary">LOADING LOOMLY...</p>
+  </div>
+);
+
 const AppContent = () => {
   const location = useLocation();
 
@@ -46,12 +54,11 @@ const AppContent = () => {
     return (
     <div className="relative bg-black">
       <GlobalLoader />
-      <Header />
-      <SocialIcons />
-      <main>
-        <AnimatePresence mode="wait">
-          {/* +++ NEW: Added Suspense wrapper for lazy loading +++ */}
-          <Suspense fallback={<GlobalLoader />}>
+      <Suspense fallback={<AppLoadingScreen />}>
+        <Header />
+        <SocialIcons />
+        <main>
+          <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname + location.search}
               initial="initial"
@@ -95,10 +102,10 @@ const AppContent = () => {
                 <Route path="*" element={ <GenericPage title="404: Lost in the Void"> <p>The page you're looking for doesn't exist...</p> <Link to="/" className="text-brand-accent hover:underline">Return to the known universe.</Link> </GenericPage> }/>
             </Routes>
           </motion.div>
-          </Suspense>
-        </AnimatePresence>
-      </main>
-      <Footer />
+          </AnimatePresence>
+        </main>
+        <Footer />
+      </Suspense>
     </div>
   );
 }
