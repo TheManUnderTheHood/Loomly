@@ -7,13 +7,13 @@ const MegaMenu = ({ menuData }) => {
 
   return (
     <div className="absolute top-full left-0 w-full bg-black/70 backdrop-blur-xl border-t border-gray-800 shadow-lg animate-fade-in-down">
-      <div className="container mx-auto p-8 grid grid-cols-5 gap-x-8">
+      <div className={`container mx-auto p-8 grid gap-x-8 ${menuData.id === 'collections' ? 'grid-cols-1' : 'grid-cols-5'}`}>
         {menuData.columns.map((column, index) => (
-          <div key={index}>
+          <div key={index} className={menuData.id === 'collections' ? 'w-full' : ''}>
             <h3 className="font-primary tracking-widest text-brand-accent mb-4 uppercase">
               {column.title}
             </h3>
-            <ul className="space-y-3">
+            <ul className={menuData.id === 'collections' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-8 gap-y-3' : 'space-y-3'}>
               {column.links.map((link, linkIndex) => (
                 <li key={linkIndex}>
                   <Link 
