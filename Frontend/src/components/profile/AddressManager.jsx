@@ -24,8 +24,8 @@ const AddressForm = ({ onSave, onCancel, address }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
-      <div className="bg-gray-900 border border-gray-700 p-6 rounded-lg w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center">
+      <div className="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-gray-700 bg-gray-900 p-6">
         <h3 className="text-2xl font-bold mb-4">{address ? 'Edit Address' : 'Add New Address'}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input name="addressLine1" value={formData.addressLine1} onChange={handleChange} placeholder="Address Line 1" required className="w-full bg-gray-800 p-2 rounded-md" />

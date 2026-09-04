@@ -48,6 +48,11 @@ const CartPage = () => {
       );
   }
 
+  const cartTotal = cart.cart.items.reduce((total, item) => {
+    if (!item?.product) return total;
+    return total + item.product.price * item.quantity;
+  }, 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white pt-40 pb-20 px-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]"></div>
@@ -87,7 +92,7 @@ const CartPage = () => {
             <div className="space-y-4 text-gray-300">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>{formatINR(cart.cartTotalPrice)}</span>
+                <span>{formatINR(cartTotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
@@ -96,7 +101,7 @@ const CartPage = () => {
               <div className="border-t border-gray-700 my-4"></div>
               <div className="flex justify-between font-bold text-white text-xl">
                 <span>Total</span>
-                <span>{formatINR(cart.cartTotalPrice)}</span>
+                <span>{formatINR(cartTotal)}</span>
               </div>
             </div>
             <button onClick={() => navigate('/checkout')} className="w-full mt-6 bg-gradient-to-r from-brand-accent to-red-600 text-white font-bold py-3 rounded-lg hover:shadow-lg hover:shadow-brand-accent/50 transition-all duration-300 transform hover:scale-105">
