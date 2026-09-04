@@ -74,7 +74,11 @@ const CheckoutPage = () => {
       try {
         // Fetch Public Key
         const { data: configData } = await api.get('/payment/stripekey');
-        setStripePromise(loadStripe(configData.data.stripeApiKey));
+        const stripeApiKey = configData.data?.stripeApiKey;
+        if (!stripeApiKey) {
+          throw new Error('Stripe publishable key is not configured');
+        }
+        setStripePromise(loadStripe(stripeApiKey));
 
         // Create Payment Intent with Cart Total
         const amount = Math.round(calculateTotal() * 100); // Stripe expects cents

@@ -26,8 +26,14 @@ const processPayment = asyncHandler(async (req, res) => {
 });
 
 const sendStripeApiKey = asyncHandler(async (req, res) => {
+    const stripeApiKey = process.env.STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_API_KEY;
+
+    if (!stripeApiKey) {
+        throw new ApiError(500, "Stripe publishable key is not configured");
+    }
+
     res.status(200).json(
-        new ApiResponse(200, { stripeApiKey: process.env.STRIPE_API_KEY }, "Stripe API Key sent successfully")
+        new ApiResponse(200, { stripeApiKey }, "Stripe API Key sent successfully")
     );
 });
 

@@ -96,6 +96,7 @@ Make sure you have the following installed and set up:
    CLOUDINARY_API_KEY=your_cloudinary_api_key
    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
    STRIPE_SECRET_KEY=your_stripe_secret
+   STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
    ```
 
 5. **Run the Backend Server**
