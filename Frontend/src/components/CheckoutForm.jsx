@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import Loader from './Loader';
 import { formatINR } from '../utils/currency';
 
-const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }) => {
+const CheckoutForm = ({ amount, email, shippingInfo, createOrder, fetchCart, navigate }) => {
   const checkoutResult = useCheckoutElements();
   const [loading, setLoading] = useState(false);
 
@@ -16,11 +16,17 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
       return;
     }
 
+    if (!email) {
+      toast.error('An email address is required for payment.');
+      return;
+    }
+
     setLoading(true);
     const toastId = toast.loading("Processing payment...");
 
     try {
       const result = await checkoutResult.checkout.confirm({
+        email,
         redirect: 'if_required',
       });
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useOrder } from '../context/OrderContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api';
@@ -12,6 +13,7 @@ import { formatINR } from '../utils/currency';
 const CheckoutPage = () => {
   const { cart, cartItemCount, fetchCart } = useCart();
   const { createOrder } = useOrder();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [stripePromise, setStripePromise] = useState(null);
   const [clientSecret, setClientSecret] = useState('');
@@ -179,6 +181,7 @@ const CheckoutPage = () => {
                   <CheckoutElementsProvider stripe={stripePromise} options={{ clientSecret }}>
                       <CheckoutForm 
                           amount={calculateTotal()}
+                          email={user?.email}
                           shippingInfo={shippingInfo}
                           createOrder={createOrder}
                           fetchCart={fetchCart}
