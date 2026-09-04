@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import api from '../api';
 import { ChevronRight, Heart, Star, Share2, Facebook, Instagram, Mail, RotateCcw, PackageCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import api from '../api';
 import ProductCard from '../components/ProductCard';
 import AnimatedMarquee from '../components/AnimatedMarquee';
