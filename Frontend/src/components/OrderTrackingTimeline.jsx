@@ -1,6 +1,6 @@
 import { Package, Truck, CheckCircle, XCircle } from 'lucide-react';
 
-const OrderTrackingTimeline = ({ trackingHistory, currentStatus }) => {
+const OrderTrackingTimeline = ({ trackingHistory }) => {
   const statusConfig = {
     Processing: {
       icon: Package,

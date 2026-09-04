@@ -46,7 +46,7 @@ const AdminDashboard = () => {
             await api.patch(`/orders/admin/status/${orderId}`, { status: newStatus });
             toast.success("Order status updated!");
             fetchData();
-        } catch (error) {
+        } catch {
             toast.error("Failed to update status");
         }
     };

@@ -17,7 +17,7 @@ const AddressForm = ({ onSave, onCancel, address }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
@@ -59,7 +59,7 @@ const AddressManager = () => {
       if (response.data.success) {
         setAddresses(response.data.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Could not fetch addresses.');
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ const AddressManager = () => {
     const apiCall = editingAddress
       ? api.put(`/users/addresses/${editingAddress._id}`, formData)
       : api.post('/users/addresses', formData);
-    
+
     const toastId = toast.loading(editingAddress ? 'Updating address...' : 'Adding address...');
     try {
       const response = await apiCall;
@@ -101,7 +101,7 @@ const AddressManager = () => {
       toast.error(error.response?.data?.message || 'Could not delete address.', { id: toastId });
     }
   };
-  
+
   const handleSetDefault = async (addressId) => {
     const toastId = toast.loading('Setting default...');
     try {
@@ -121,7 +121,7 @@ const AddressManager = () => {
           <Plus size={18} /> Add New
         </button>
       </div>
-      
+
       {loading ? (
         <div className="flex items-center gap-2 text-gray-400">
           <Loader size="xs" className="border-gray-500 border-t-gray-300" />

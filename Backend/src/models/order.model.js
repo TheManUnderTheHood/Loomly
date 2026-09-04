@@ -40,7 +40,7 @@ const orderSchema = new Schema(
       default: "Processing",
     },
     paymentInfo: {
-      id: { type: String }, // From payment gateway
+      id: { type: String, required: true, unique: true }, // From payment gateway
       status: { type: String, required: true, default: "Pending" },
     },
     deliveredAt: {

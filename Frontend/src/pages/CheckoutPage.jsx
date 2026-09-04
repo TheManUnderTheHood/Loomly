@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
+import { CheckoutElementsProvider } from '@stripe/react-stripe-js/checkout';
 import CheckoutForm from '../components/CheckoutForm';
 import { formatINR } from '../utils/currency';
 
@@ -13,7 +13,6 @@ const CheckoutPage = () => {
   const { cart, cartItemCount, fetchCart } = useCart();
   const { createOrder } = useOrder();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [stripePromise, setStripePromise] = useState(null);
   const [clientSecret, setClientSecret] = useState('');
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -70,7 +69,7 @@ const CheckoutPage = () => {
   };
 
   useEffect(() => {
-    const fetchStripeConfigAndPaymentIntent = async () => {
+    const fetchStripeCheckoutSession = async () => {
       try {
         // Fetch Public Key
         const { data: configData } = await api.get('/payment/stripekey');
@@ -80,9 +79,8 @@ const CheckoutPage = () => {
         }
         setStripePromise(loadStripe(stripeApiKey));
 
-        // Create Payment Intent with Cart Total
-        const amount = Math.round(calculateTotal() * 100); // Stripe expects cents
-        const { data: clientSecretData } = await api.post('/payment/process', { amount });
+        // The backend calculates the total and creates the Checkout Session.
+        const { data: clientSecretData } = await api.post('/payment/process');
         setClientSecret(clientSecretData.data.client_secret);
       } catch (error) {
         console.error("Failed to initialize Stripe", error);
@@ -91,29 +89,10 @@ const CheckoutPage = () => {
     };
 
     if (cartItemCount > 0) {
-      fetchStripeConfigAndPaymentIntent();
+      fetchStripeCheckoutSession();
     }
   }, [cart, cartItemCount]);
 
-  const handlePlaceOrder = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    const toastId = toast.loading("Placing your order...");
-
-    const result = await createOrder({ shippingInfo });
-
-    if (result.success) {
-      toast.success(result.message, { id: toastId });
-      // Refetch the cart to show it's empty
-      await fetchCart();
-      // Redirect to the order history page
-      navigate('/orders');
-    } else {
-      toast.error(result.message, { id: toastId });
-    }
-    setLoading(false);
-  };
-  
   if (cartItemCount === 0) {
       navigate("/cart"); // Redirect if cart is empty
       return null;
@@ -195,9 +174,9 @@ const CheckoutPage = () => {
                 <span>{formatINR(calculateTotal())}</span>
               </div>
 
-              {/* Stripe Payment Elements */}
+                {/* Stripe Checkout Elements */}
               {clientSecret && stripePromise && (
-                  <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night' } }}>
+                  <CheckoutElementsProvider stripe={stripePromise} options={{ clientSecret }}>
                       <CheckoutForm 
                           amount={calculateTotal()}
                           shippingInfo={shippingInfo}
@@ -205,7 +184,7 @@ const CheckoutPage = () => {
                           fetchCart={fetchCart}
                           navigate={navigate}
                       />
-                  </Elements>
+                  </CheckoutElementsProvider>
               )}
 
             </div>

@@ -61,6 +61,10 @@ app.get("/", (req, res) => {
     res.send(`<h1>Loomly API is Working!!!</h1>`);
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // The error handler MUST be the last middleware
 app.use(errorHandler);
 

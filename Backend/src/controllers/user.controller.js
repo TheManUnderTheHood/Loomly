@@ -105,10 +105,11 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
+  const isProduction = process.env.NODE_ENV === "production";
   const options = {
     httpOnly: true,
-    secure: true, // Always true in production on Render
-    sameSite: "None", // Allow cross-domain cookie
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax",
   };
 
   return res
@@ -120,8 +121,6 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser,
-          accessToken,
-          refreshToken,
         },
         "User logged In Successfully"
       )

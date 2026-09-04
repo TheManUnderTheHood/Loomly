@@ -5,6 +5,11 @@ import { Order } from "../models/order.model.js";
 import { Cart } from "../models/cart.model.js";
 import { Product } from "../models/product.model.js";
 import mongoose from "mongoose";
+import Stripe from "stripe";
+
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 const createOrder = asyncHandler(async (req, res) => {
   const { shippingInfo, paymentInfo } = req.body;
@@ -14,9 +19,8 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Shipping information is required");
   }
 
-  // Expecting paymentInfo.status = "succeeded" from the Stripe elements
-  if (!paymentInfo || paymentInfo.status !== "succeeded") {
-      throw new ApiError(400, "Valid Payment Info is required");
+  if (!paymentInfo?.id || !stripe) {
+    throw new ApiError(400, "A valid payment is required");
   }
 
   const cart = await Cart.findOne({ owner: userId }).populate("items.product", "name price stock thumbnail variants");
@@ -63,14 +67,31 @@ const createOrder = asyncHandler(async (req, res) => {
     });
   }
 
+  let checkoutSession;
+  try {
+    checkoutSession = await stripe.checkout.sessions.retrieve(paymentInfo.id);
+  } catch {
+    throw new ApiError(400, "Payment could not be verified");
+  }
+
+  if (
+    checkoutSession.payment_status !== "paid" ||
+    checkoutSession.amount_total !== Math.round(totalPrice * 100) ||
+    checkoutSession.currency !== "inr" ||
+    checkoutSession.metadata?.userId !== userId.toString() ||
+    checkoutSession.metadata?.cartId !== cart._id.toString()
+  ) {
+    throw new ApiError(400, "Payment does not match this order");
+  }
+
   const order = await Order.create({
     shippingInfo,
     orderItems,
     totalPrice,
     owner: userId,
     paymentInfo: {
-        id: paymentInfo.id || "manual_transaction",
-        status: paymentInfo.status
+      id: checkoutSession.id,
+      status: checkoutSession.payment_status
     },
     trackingHistory: [
       {

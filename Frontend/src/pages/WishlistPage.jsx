@@ -1,7 +1,6 @@
 import { useWishlist } from "../context/WishlistContext";
 import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import SpotlightCard from "../components/SpotlightCard";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
 

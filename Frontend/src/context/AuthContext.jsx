@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
           await Promise.all([fetchCart(), fetchWishlist()]);
         }
-      } catch (error) {
+      } catch {
         // +++ MODIFICATION: This block is now expected to run for unauthenticated users +++
         // We don't need to log an error here because the interceptor already informs us if a session truly expires.
         // This catch block simply handles the normal case of a user not being logged in on app start.
