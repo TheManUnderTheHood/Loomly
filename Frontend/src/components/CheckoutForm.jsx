@@ -11,22 +11,30 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (checkoutResult.type !== 'success' || !checkoutResult.checkout.canConfirm) {
+    if (checkoutResult.type !== 'success') {
+      toast.error('Payment form is still loading. Please try again.');
+      return;
+    }
+
+    if (!checkoutResult.checkout.canConfirm) {
+      toast.error('Please complete your payment details.');
       return;
     }
 
     setLoading(true);
     const toastId = toast.loading("Processing payment...");
 
-    const result = await checkoutResult.checkout.confirm({
-      returnUrl: `${window.location.origin}/orders`,
-      redirect: 'if_required',
-    });
+    try {
+      const result = await checkoutResult.checkout.confirm({
+        returnUrl: `${window.location.origin}/orders`,
+        redirect: 'if_required',
+      });
 
-    if (result.type === 'error') {
-      toast.error(result.error.message, { id: toastId });
-      setLoading(false);
-    } else {
+      if (result.type === 'error') {
+        toast.error(result.error.message, { id: toastId });
+        return;
+      }
+
         // Payment succeeded, now create the order in OUR backend
         
         const backendResult = await createOrder({
@@ -44,7 +52,10 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
             // Edge case: Paid on stripe, but failed to save in our DB
             toast.error(backendResult.message || "Payment succeeded, but failed to save order. Contact support.", { id: toastId });
         }
-        setLoading(false);
+    } catch (error) {
+      toast.error(error.message || 'Payment could not be completed.', { id: toastId });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,7 +64,7 @@ const CheckoutForm = ({ amount, shippingInfo, createOrder, fetchCart, navigate }
       <PaymentElement className="mb-4 theme-dark" />
       <button 
         type="submit" 
-        disabled={checkoutResult.type !== 'success' || !checkoutResult.checkout.canConfirm || loading}
+        disabled={loading}
         className={`w-full py-4 text-white font-bold rounded-md bg-gradient-to-r from-brand-accent to-red-600 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-brand-accent/30'}`}
       >
         {loading ? (
