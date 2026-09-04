@@ -11,11 +11,14 @@ export const useOrder = () => {
 export const OrderProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
-  const createOrder = async (shippingInfo) => {
+  const createOrder = async (orderData) => {
     if (!isAuthenticated) return { success: false, message: "Please log in." };
 
     try {
-      const response = await api.post("/orders/create", { shippingInfo });
+      const payload = orderData.paymentInfo
+        ? orderData
+        : { shippingInfo: orderData };
+      const response = await api.post("/orders/create", payload);
       return { success: true, order: response.data.data, message: "Order placed successfully!" };
     } catch (error) {
       console.error("Failed to create order", error);
