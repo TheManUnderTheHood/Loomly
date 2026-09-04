@@ -332,11 +332,11 @@ const Product = () => {
                   />
                 ))}
               </div>
-              <div className="flex-grow overflow-hidden rounded-2xl border border-gray-700/50 shadow-2xl">
+              <div className="flex-grow aspect-[4/5] overflow-hidden rounded-2xl border border-gray-700/50 shadow-2xl">
                 <img 
                   src={mainImage} 
                   alt={product.name} 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  className="block w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
             </div>
